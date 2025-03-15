@@ -11,7 +11,7 @@ def ping_scan(ip: str):
         print("Host is down, interrupting process")
         sys.exit()
     else:
-        print("Host is up")
+        print("Host is up\n")
 
 
 def arp_scan(ip: str):

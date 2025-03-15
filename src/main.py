@@ -8,11 +8,10 @@ if __name__ == "__main__":
         print(f"Usage: ${sys.argv[0]} ip")
 
     ip = sys.argv[1]
-    # print(sys.argv[1])
+    ports = sys.argv[2]
 
     print("Verifying that the host is up: ")
     host_scan.ping_scan(ip)
 
     print("Starting port scan: ")
-    for port in range(100):
-        port_scan.tcp_connect_scan(ip, port)
+    port_scan.tcp_syn_scan(ip, ports)

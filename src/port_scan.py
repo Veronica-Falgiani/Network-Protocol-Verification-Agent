@@ -19,7 +19,8 @@ def port_parse(port_str: str):
                 ports.append(i)
         else:
             print("Error with input ports")
-            # Random port list
+
+    # Random port list
     elif "," in port_str:
         p_list = port_str.split(",")
         for item in p_list:
@@ -59,18 +60,21 @@ def tcp_connect_scan(ip: str, port: int):
 # Rec:  SYN/ACK -> RST -> open
 #       RST -> closed
 #       no response/ICMP unreachable -> filtered
-def tcp_syn_scan(ip: str, port: int):
-    packet = IP(dst=ip) / TCP(dport=port, flags="S")
-    res = sr1(packet, timeout=5, verbose=0)
-    flag_res = res.sprintf("%TCP.flags%")
+def tcp_syn_scan(ip: str, ports_str: str):
+    ports = port_parse(ports_str)
 
-    if flag_res == "RA":
-        pass
-        # print(f"{port} \t closed")
-    elif flag_res == "SA":
-        print(f"{port} \t open")
-    else:
-        print(f"{port} \t filtered")
+    for port in ports:
+        packet = IP(dst=ip) / TCP(dport=port, flags="S")
+        res = sr1(packet, timeout=5, verbose=0)
+        flag_res = res.sprintf("%TCP.flags%")
+
+        if flag_res == "RA":
+            pass
+            # print(f"{port} \t closed")
+        elif flag_res == "SA":
+            print(f"{port} \t open")
+        else:
+            print(f"{port} \t filtered")
 
 
 # Send: ACK
