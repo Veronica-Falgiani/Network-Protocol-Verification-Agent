@@ -8,7 +8,7 @@ def ping_scan(ip: str):
     result = out.stdout.decode()
 
     if "0 received" in result:
-        print("Host is down, interrupting process")
+        print("Host is down")
         sys.exit()
     else:
         print("Host is up\n")
