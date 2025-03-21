@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import terminal_colors
 
 
 # Check if the host is up
@@ -8,10 +9,18 @@ def ping_scan(ip: str):
     result = out.stdout.decode()
 
     if "0 received" in result:
-        print("Host is down")
+        print(
+            terminal_colors.bcolors.WARNING
+            + "Host is down"
+            + terminal_colors.bcolors.ENDC
+        )
         sys.exit()
     else:
-        print("Host is up\n")
+        print(
+            terminal_colors.bcolors.OKGREEN
+            + "Host is up\n"
+            + terminal_colors.bcolors.ENDC
+        )
 
 
 def arp_scan(ip: str):

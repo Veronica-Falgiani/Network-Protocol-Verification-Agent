@@ -6,7 +6,6 @@ import port_scan
 if __name__ == "__main__":
     args = parser.parser()
 
-    print(args)
     host_s = args.host_scan
     service_s = args.service_scan
     ip = args.host
@@ -17,3 +16,5 @@ if __name__ == "__main__":
 
     print("Starting port scan: ")
     port_scan.scan(service_s, ip, ports)
+
+    print("Verifying service active on ports: ")
