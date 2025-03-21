@@ -4,11 +4,11 @@ from scapy.all import *
 
 
 # Selecting the right scan based on the user input
-def scan(scan, ip, ports_str):
+def scan(service_s, ip, ports_str):
     ports = port_parse(ports_str)
 
     print("PORT \t STATUS")
-    match scan:
+    match service_s:
         case "c":
             tcp_connect_scan(ip, ports)
         case "s":
@@ -25,6 +25,8 @@ def scan(scan, ip, ports_str):
             tcp_xmas_scan(ip, ports)
         case "u":
             udp_scan(ip, ports)
+        case None:
+            tcp_syn_scan(ip, ports)
         case _:
             print("Cannot find scan type")
             sys.exit()
