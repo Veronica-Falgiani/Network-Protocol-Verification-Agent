@@ -6,11 +6,12 @@ from scapy.all import *
 # Selecting the right scan based on the user input
 def scan(service_s, ip, ports_str):
     ports = port_parse(ports_str)
+    open_ports = []
 
     print("PORT \t STATUS")
     match service_s:
         case "c":
-            tcp_connect_scan(ip, ports)
+            open_ports = tcp_connect_scan(ip, ports, open_ports)
         case "s":
             tcp_syn_scan(ip, ports)
         case "a":
@@ -30,6 +31,8 @@ def scan(service_s, ip, ports_str):
         case _:
             print("Cannot find scan type")
             sys.exit()
+
+    return open_ports
 
 
 # Parsing ports we need to scan from user input
@@ -76,16 +79,19 @@ def port_parse(port_str: str):
 # Send: connect() (TCP with SYN)
 # Rec:  TCP with SYN/ACK -> open
 #       no response -> closed/filtered
-def tcp_connect_scan(ip: str, ports: list):
+def tcp_connect_scan(ip: str, ports: list, open_ports: list):
     for port in ports:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(4)
         try:
             s.connect((ip, port))
             s.close()
-            print("Port: " + str(port) + " open")
+            print(f"{port} \t open")
+            open_ports.append(port)
         except socket.error:
-            print("Port: " + str(port) + " closed/filtered")
+            print(f"{port} \t closed/filtered")
+
+    return open_ports
 
 
 # Send: SYN
@@ -93,6 +99,8 @@ def tcp_connect_scan(ip: str, ports: list):
 #       RST -> closed
 #       no response/ICMP unreachable -> filtered
 def tcp_syn_scan(ip: str, ports: list):
+    open_ports = []
+
     for port in ports:
         packet = IP(dst=ip) / TCP(dport=port, flags="S")
         res = sr1(packet, timeout=5, verbose=0)
@@ -107,6 +115,7 @@ def tcp_syn_scan(ip: str, ports: list):
                 # print(f"{port} \t closed")
             elif flag_res == "SA":
                 print(f"{port} \t open")
+                open_ports.append(port)
 
 
 # Send: ACK

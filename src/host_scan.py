@@ -1,14 +1,14 @@
-import subprocess
 import sys
 import terminal_colors
+from scapy.all import *
 
 
 # Check if the host is up
 def ping_scan(ip: str):
-    out = subprocess.run((["ping", "-c", "4", ip]), capture_output=True)
-    result = out.stdout.decode()
+    packet = IP(dst=ip, ttl=20) / ICMP()
+    res = sr1(packet, timeout=5, verbose=0)
 
-    if "0 received" in result:
+    if res == None:
         print(
             terminal_colors.bcolors.WARNING
             + "Host is down"
