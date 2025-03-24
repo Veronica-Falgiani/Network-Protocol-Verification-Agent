@@ -1,5 +1,5 @@
 import sys
-import terminal_colors
+from terminal_colors import print_fail, print_ok, print_warning
 from scapy.all import *
 
 
@@ -9,18 +9,10 @@ def ping_scan(ip: str):
     res = sr1(packet, timeout=5, verbose=0)
 
     if res == None:
-        print(
-            terminal_colors.bcolors.WARNING
-            + "Host is down"
-            + terminal_colors.bcolors.ENDC
-        )
+        print_fail("Host is down")
         sys.exit()
     else:
-        print(
-            terminal_colors.bcolors.OKGREEN
-            + "Host is up\n"
-            + terminal_colors.bcolors.ENDC
-        )
+        print_ok("Host is up\n")
 
 
 def arp_scan(ip: str):
@@ -28,7 +20,16 @@ def arp_scan(ip: str):
 
 
 def tcp_syn_scan(ip: str):
-    pass
+    packet = IP(dst=ip) / TCP(dport=80, flags="S")
+    res = sr1(packet, timeout=5, verbose=0)
+
+    flag_res = res.sprintf("%TCP.flags%")
+
+    if flag_res == "RA":
+        print_fail("Host is down")
+        sys.exit()
+    elif flag_res == "SA":
+        print_ok("Host is up\n")
 
 
 def tcp_ack_scan(ip: str):

@@ -1,5 +1,6 @@
 import socket
 import sys
+from terminal_colors import print_ok, print_fail, print_warning
 from scapy.all import *
 
 
@@ -29,7 +30,7 @@ def scan(service_s, ip, ports_str):
         case None:
             tcp_syn_scan(ip, ports)
         case _:
-            print("Cannot find scan type")
+            print_fail("Cannot find scan type")
             sys.exit()
 
     return open_ports
@@ -52,7 +53,7 @@ def port_parse(port_str: str):
             for i in range(int(p_range[0]), int(p_range[1]) + 1):
                 ports.append(i)
         else:
-            print("Error with input ports")
+            print_fail("Error with input ports")
             sys.exit()
 
     # Random port list
@@ -62,7 +63,7 @@ def port_parse(port_str: str):
             if item.isnumeric() and int(item) >= 0 and int(item) <= 65535:
                 ports.append(int(item))
             else:
-                print(f"port {item} not valid! Skipping it")
+                print_warning(f"port {item} not valid! Skipping it")
 
     # Single port
     elif port_str.isnumeric() and int(port_str) >= 0 and int(port_str) <= 65535:
@@ -70,7 +71,7 @@ def port_parse(port_str: str):
 
     # Generic error
     else:
-        print("Error with input ports")
+        print_fail("Error with input ports")
         sys.exit()
 
     return ports
