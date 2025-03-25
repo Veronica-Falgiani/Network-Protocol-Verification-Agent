@@ -5,11 +5,11 @@ from scapy.all import *
 
 
 # Selecting the right scan based on the user input
-def scan(service_s, ip, ports_str):
+def scan(port_s, ip, ports_str):
     ports = port_parse(ports_str)
 
     print("PORT \t STATUS")
-    match service_s:
+    match port_s:
         case "c":
             open_ports = tcp_connect_scan(ip, ports)
         case "s":
@@ -284,21 +284,22 @@ def udp_scan(ip: str, ports: list):
             res = sr1(packet, timeout=3, verbose=0)
             if res is None:
                 print(f"{port} \t open/filtered")
+                open_ports.append(port)
 
         else:
             icmp_type = res.sprintf("%ICMP.type%")
             icmp_code = res.sprintf("%ICMP.code%")
 
-            if icmp_type in [3, 13]:
-                if icmp_code == 3:
+            if icmp_type == "dest-unreach":
+                if icmp_code == "port-unreachable":
                     pass
                     # print(f"{port} \t closed")
-                elif icmp_code in [0, 1, 2, 9, 10, 13]:
+                else:
                     print(f"{port} \t filtered")
 
             else:
-                pass
                 # Unusual state, may be open
-                # print(f"{port} \t open")
+                print(f"{port} \t open")
+                open_ports.append(port)
 
     return open_ports

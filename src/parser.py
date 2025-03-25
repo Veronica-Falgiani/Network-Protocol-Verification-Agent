@@ -19,11 +19,11 @@ def parser():
     parser.add_argument(
         "-hs",
         "--host_scan",
-        help="Host scan to execute: ",
+        help="Host scan to execute: [p]ing, [s]yn, [a]ck, [u]dp (ping scan will be used by default)",
     )
     parser.add_argument(
         "-ps",
-        "--service_scan",
+        "--port_scan",
         help="Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (syn scan will be used by default)",
     )
     parser.add_argument(
