@@ -10,6 +10,8 @@ if __name__ == "__main__":
     host_s = args.host_scan
     service_s = args.service_scan
     ip = args.host
+    if ip == "localhost":
+        ip = "127.0.0.1"
     ports = args.ports
 
     print("Verifying that the host is up: ")
