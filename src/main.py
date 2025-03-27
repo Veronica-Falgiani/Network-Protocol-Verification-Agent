@@ -20,7 +20,7 @@ if __name__ == "__main__":
     print("\nVerifying that the host is up: ")
     host_scan.scan(host_s, ip)
 
-    print("Starting port scan: ")
+    print("\nStarting port scan: ")
     open_ports = []
     open_ports = port_scan.scan(port_s, ip, ports_list)
 
