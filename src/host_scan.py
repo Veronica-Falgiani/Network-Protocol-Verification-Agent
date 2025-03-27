@@ -1,4 +1,5 @@
 import sys
+import socket
 from terminal_colors import print_fail, print_ok
 from scapy.all import *
 
@@ -35,7 +36,7 @@ def ip_parse(ip: str):
     try:
         socket.inet_aton(ip)
     except socket.error:
-        print("IP not valid!")
+        print_fail("IP not valid!")
         sys.exit()
 
 

@@ -5,9 +5,7 @@ from scapy.all import *
 
 
 # Selecting the right scan based on the user input
-def scan(port_s, ip, ports_str):
-    ports = port_parse(ports_str)
-
+def scan(port_s, ip, ports):
     print("PORT \t STATUS")
     match port_s:
         case "c":
@@ -52,7 +50,7 @@ def port_parse(port_str: str):
             for i in range(int(p_range[0]), int(p_range[1]) + 1):
                 ports.append(i)
         else:
-            print_fail("Error with input ports")
+            print_fail("Ports are not valid!")
             sys.exit()
 
     # Random port list
@@ -64,13 +62,17 @@ def port_parse(port_str: str):
             else:
                 print_warning(f"port {item} not valid! Skipping it")
 
+        if len(ports) == 0:
+            print_fail("Ports are not valid!")
+            sys.exit()
+
     # Single port
     elif port_str.isnumeric() and int(port_str) >= 0 and int(port_str) <= 65535:
         ports.append(int(port_str))
 
     # Generic error
     else:
-        print_fail("Error with input ports")
+        print_fail("Ports are not valid!")
         sys.exit()
 
     return ports
