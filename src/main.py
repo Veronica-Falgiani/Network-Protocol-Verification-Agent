@@ -10,15 +10,14 @@ if __name__ == "__main__":
     host_s = args.host_scan
     port_s = args.port_scan
     ip = args.host
-    if ip == "localhost":
-        ip = "127.0.0.1"
     ports = args.ports
 
     print("Verifying that the host is up: ")
     host_scan.scan(host_s, ip)
 
     print("Starting port scan: ")
+    open_ports = []
     open_ports = port_scan.scan(port_s, ip, ports)
 
-    print("Verifying service active on ports: ")
-    service_scan.scan(open_ports)
+    print("\nVerifying service active on ports: ")
+    service_scan.scan(ip, open_ports)

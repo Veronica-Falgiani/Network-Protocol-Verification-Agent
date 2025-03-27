@@ -7,6 +7,8 @@ SCAN_PORTS = [21, 22, 80, 443]
 
 # Selecting the right scan based on the user input
 def scan(host_s, ip):
+    ip_parse(ip)
+
     match host_s:
         case "p":
             res_status = ping_scan(ip)
@@ -26,6 +28,14 @@ def scan(host_s, ip):
         print_ok("Host is up\n")
     else:
         print_fail("Host is down\n")
+        sys.exit()
+
+
+def ip_parse(ip: str):
+    try:
+        socket.inet_aton(ip)
+    except socket.error:
+        print("IP not valid!")
         sys.exit()
 
 
