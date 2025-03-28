@@ -2,6 +2,7 @@ import socket
 from urllib.parse import urlparse
 from http.client import HTTPConnection, HTTPSConnection
 from ftplib import FTP
+from smtplib import SMTP, SMTPConnectError
 
 
 def scan(ip: str, open_ports: list):
@@ -89,8 +90,26 @@ def ftp_check(ip, open_ports):
 
 
 def dns_check(ip, open_ports):
-    pass
+    for port in open_ports:
+        pass
 
 
 def smtp_check(ip, open_ports):
-    pass
+    for port in open_ports:
+        try:
+            smtp = SMTP(host=ip, port=port, timeout=3)
+            smtp.ehlo()
+            smtp.quit()
+
+            # ftp also responds to this, so we need to verify the banner ?
+            s = socket.socket()
+            s.connect((ip, port))
+            banner = s.recv(1024)
+            banner = banner.decode("utf-8", errors="ignore")
+
+            if "SMTP" in banner:
+                print(f"{port} \t SMTP")
+                s.close()
+            s.close()
+        except:
+            pass
