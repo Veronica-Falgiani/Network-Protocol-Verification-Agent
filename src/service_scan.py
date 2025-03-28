@@ -1,6 +1,7 @@
 import socket
 from urllib.parse import urlparse
 from http.client import HTTPConnection, HTTPSConnection
+from ftplib import FTP
 
 
 def scan(ip: str, open_ports: list):
@@ -9,6 +10,9 @@ def scan(ip: str, open_ports: list):
     ssh_check(ip, open_ports)
     http_check(ip, open_ports)
     https_check(ip, open_ports)
+    ftp_check(ip, open_ports)
+    dns_check(ip, open_ports)
+    smtp_check(ip, open_ports)
 
 
 def ssh_check(ip: str, open_ports: list):
@@ -60,3 +64,33 @@ def https_check(ip: str, open_ports: list):
 
         except:
             pass
+
+
+def ftp_check(ip, open_ports):
+    for port in open_ports:
+        try:
+            ftp = FTP()
+            ftp.connect(host=ip, port=port, timeout=3)
+            ftp.quit()
+
+            # smtp also responds to this, so we need to verify the banner ?
+            s = socket.socket()
+            s.connect((ip, port))
+            banner = s.recv(1024)
+            banner = banner.decode("utf-8", errors="ignore")
+
+            if "FTP" in banner:
+                print(f"{port} \t FTP")
+                s.close()
+            s.close()
+
+        except:
+            pass
+
+
+def dns_check(ip, open_ports):
+    pass
+
+
+def smtp_check(ip, open_ports):
+    pass

@@ -33,6 +33,8 @@ def scan(host_s, ip):
 
 
 def ip_parse(ip: str):
+    if ip == "localhost":
+        ip = "127.0.0.1"
     try:
         socket.inet_aton(ip)
     except socket.error:
