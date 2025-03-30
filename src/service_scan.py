@@ -9,15 +9,18 @@ import dns.message, dns.query
 
 def scan(ip: str, open_ports: list):
     print("PORT \t SERVICE")
+    services = {}
 
-    ssh_check(ip, open_ports)
-    http_check(ip, open_ports)
-    https_check(ip, open_ports)
-    ftp_check(ip, open_ports)
-    dns_check(ip, open_ports)
-    smtp_check(ip, open_ports)
-    # telnet_check(ip, open_ports)
+    ssh_check(ip, open_ports, services)
+    http_check(ip, open_ports, services)
+    https_check(ip, open_ports, services)
+    ftp_check(ip, open_ports, services)
+    dns_check(ip, open_ports, services)
+    smtp_check(ip, open_ports, services)
+    telnet_check(ip, open_ports, services)
     undefined(open_ports)
+
+    return services
 
 
 def ssh_check(ip: str, open_ports: list):
@@ -36,6 +39,7 @@ def ssh_check(ip: str, open_ports: list):
                 s.close()
 
             s.close()
+
         except socket.error:
             pass
 
@@ -52,6 +56,7 @@ def http_check(ip: str, open_ports: list):
             if conn.getresponse():
                 print(f"{port} \t HTTP")
                 open_ports.remove(port)
+
         except:
             pass
 
@@ -89,7 +94,7 @@ def ftp_check(ip, open_ports):
             if "FTP" in banner:
                 print(f"{port} \t FTP")
                 open_ports.remove(port)
-                s.close()
+
             s.close()
 
         except:
@@ -103,6 +108,7 @@ def dns_check(ip, open_ports):
             dns.query.udp_with_fallback(query, ip, 3, port)
             print(f"{port} \t DNS")
             open_ports.remove(port)
+
         except:
             pass
 
@@ -123,8 +129,9 @@ def smtp_check(ip, open_ports):
             if "SMTP" in banner:
                 print(f"{port} \t SMTP")
                 open_ports.remove(port)
-                s.close()
+
             s.close()
+
         except:
             pass
 
@@ -133,14 +140,13 @@ def telnet_check(ip, open_ports):
     for port in open_ports:
         try:
             telnet = Telnet(ip, port, timeout=3)
-            print(str(port), telnet)
-            telnet.write(b"test")
-            telnet.write(b"test")
-            res = telnet.read_all()
-            print(res)
+            res = telnet.read_until(b"login: ", timeout=3)
+            if "login:" in str(res):
+                print(f"{port} \t Telnet")
+                open_ports.remove(port)
             telnet.close()
-        except IOError as e:
-            print(e)
+
+        except:
             pass
 
 
