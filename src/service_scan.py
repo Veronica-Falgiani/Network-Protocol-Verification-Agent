@@ -2,18 +2,22 @@ import socket
 from urllib.parse import urlparse
 from http.client import HTTPConnection, HTTPSConnection
 from ftplib import FTP
-from smtplib import SMTP, SMTPConnectError
+from smtplib import SMTP
+from telnetlib import Telnet
+import dns.message, dns.query
 
 
 def scan(ip: str, open_ports: list):
     print("PORT \t SERVICE")
 
-    ssh_check(ip, open_ports)
-    http_check(ip, open_ports)
-    https_check(ip, open_ports)
-    ftp_check(ip, open_ports)
+    # ssh_check(ip, open_ports)
+    # http_check(ip, open_ports)
+    # https_check(ip, open_ports)
+    # ftp_check(ip, open_ports)
     dns_check(ip, open_ports)
-    smtp_check(ip, open_ports)
+    # smtp_check(ip, open_ports)
+    # telnet_check(ip, open_ports)
+    undefined(open_ports)
 
 
 def ssh_check(ip: str, open_ports: list):
@@ -28,6 +32,7 @@ def ssh_check(ip: str, open_ports: list):
 
             if banner[0:3] == "SSH":
                 print(f"{port} \t SSH")
+                open_ports.remove(port)
                 s.close()
 
             s.close()
@@ -46,7 +51,7 @@ def http_check(ip: str, open_ports: list):
 
             if conn.getresponse():
                 print(f"{port} \t HTTP")
-
+                open_ports.remove(port)
         except:
             pass
 
@@ -62,6 +67,7 @@ def https_check(ip: str, open_ports: list):
 
             if conn.getresponse():
                 print(f"{port} \t HTTPS")
+                open_ports.remove(port)
 
         except:
             pass
@@ -82,6 +88,7 @@ def ftp_check(ip, open_ports):
 
             if "FTP" in banner:
                 print(f"{port} \t FTP")
+                open_ports.remove(port)
                 s.close()
             s.close()
 
@@ -91,7 +98,12 @@ def ftp_check(ip, open_ports):
 
 def dns_check(ip, open_ports):
     for port in open_ports:
-        pass
+        try:
+            query = dns.message.make_query(".", dns.rdatatype.SOA, flags=0)
+            res = dns.query.udp_with_fallback(query, ip, 3, port)
+            print(f"{port} \t DNS")
+        except:
+            pass
 
 
 def smtp_check(ip, open_ports):
@@ -109,7 +121,28 @@ def smtp_check(ip, open_ports):
 
             if "SMTP" in banner:
                 print(f"{port} \t SMTP")
+                open_ports.remove(port)
                 s.close()
             s.close()
         except:
             pass
+
+
+def telnet_check(ip, open_ports):
+    for port in open_ports:
+        try:
+            telnet = Telnet(ip, port, timeout=3)
+            print(str(port), telnet)
+            telnet.write(b"test")
+            telnet.write(b"test")
+            res = telnet.read_all()
+            print(res)
+            telnet.close()
+        except IOError as e:
+            print(e)
+            pass
+
+
+def undefined(open_ports):
+    for port in open_ports:
+        print(f"{port}\t undefined")
