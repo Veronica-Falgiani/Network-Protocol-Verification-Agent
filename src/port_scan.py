@@ -30,6 +30,10 @@ def scan(port_s, ip, ports):
             print_fail("Cannot find scan type")
             sys.exit()
 
+    if len(open_ports) == 0:
+        print_fail("No open ports found!")
+        sys.exit()
+
     return open_ports
 
 

@@ -26,9 +26,9 @@ def scan(host_s, ip):
             sys.exit()
 
     if res_status:
-        print_ok("Host is up\n")
+        print_ok("Host is up")
     else:
-        print_fail("Host is down\n")
+        print_fail("Host is down")
         sys.exit()
 
 

@@ -10,12 +10,12 @@ import dns.message, dns.query
 def scan(ip: str, open_ports: list):
     print("PORT \t SERVICE")
 
-    # ssh_check(ip, open_ports)
-    # http_check(ip, open_ports)
-    # https_check(ip, open_ports)
-    # ftp_check(ip, open_ports)
+    ssh_check(ip, open_ports)
+    http_check(ip, open_ports)
+    https_check(ip, open_ports)
+    ftp_check(ip, open_ports)
     dns_check(ip, open_ports)
-    # smtp_check(ip, open_ports)
+    smtp_check(ip, open_ports)
     # telnet_check(ip, open_ports)
     undefined(open_ports)
 
@@ -100,8 +100,9 @@ def dns_check(ip, open_ports):
     for port in open_ports:
         try:
             query = dns.message.make_query(".", dns.rdatatype.SOA, flags=0)
-            res = dns.query.udp_with_fallback(query, ip, 3, port)
+            dns.query.udp_with_fallback(query, ip, 3, port)
             print(f"{port} \t DNS")
+            open_ports.remove(port)
         except:
             pass
 
