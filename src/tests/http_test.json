@@ -1,8 +1,10 @@
 {
   "protocol": "http",
   "author": "Veronica Falgiani",
-  "test": {
-    "check secure": "if http",
-    
+  "tests": {
+    "check secure": {
+      "command": "if http",
+      "severity": "medium"
+    }
   }
 }

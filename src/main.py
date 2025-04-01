@@ -3,6 +3,7 @@ import parser
 import host_scan
 import port_scan
 import protocol_scan
+import execute_tests
 
 if __name__ == "__main__":
     args = parser.parser()
@@ -24,6 +25,9 @@ if __name__ == "__main__":
     port_scan.print_ports(found_ports)
     open_ports = port_scan.list_open_ports(found_ports)
 
-    print("\nVerifying service active on ports: ")
-    services = service_scan.scan(ip, open_ports)
-    service_scan.print_services(services)
+    print("\nVerifying protocols active on ports: ")
+    services = protocol_scan.scan(ip, open_ports)
+    protocol_scan.print_services(services)
+
+    print("\nTesting protocols found: ")
+    execute_tests.test(services)

@@ -15,7 +15,7 @@ def scan(ip: str, ports: list) -> dict:
     services = {}
 
     # ssh_check(ip, ports, services)
-    # http_check(ip, ports, services)
+    http_check(ip, ports, services)
     # https_check(ip, ports, services)
     # ftp_check(ip, ports, services)
     # dns_check(ip, ports, services)
@@ -196,7 +196,7 @@ def telnet_check(ip: str, open_ports: list, services: dict):
             if "login:" in str(res):
                 # print(f"{port} \t Telnet")
                 open_ports.remove(port)
-                services[port] = "Telnet"
+                services[port] = "telnet"
 
             telnet.close()
 
