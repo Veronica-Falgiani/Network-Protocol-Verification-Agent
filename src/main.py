@@ -2,7 +2,7 @@
 import parser
 import host_scan
 import port_scan
-import service_scan
+import protocol_scan
 
 if __name__ == "__main__":
     args = parser.parser()

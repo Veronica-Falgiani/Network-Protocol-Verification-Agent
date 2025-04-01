@@ -1,0 +1,9 @@
+/* test result severity: low, medium, high */
+{
+  "protocol": "protocol",
+  "author": "John Doe",
+  "tests": {
+    "first check": "command",
+    
+  }
+}

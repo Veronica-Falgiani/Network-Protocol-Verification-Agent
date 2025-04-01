@@ -43,10 +43,11 @@ def port_parse(port_str: str) -> list:
     # Contiguous port list
     if ":" in port_str:
         p_range = port_str.split(":")
+
         if (
             p_range[0].isnumeric()
             and p_range[1].isnumeric()
-            and p_range[0] <= p_range[1]
+            and int(p_range[0]) <= int(p_range[1])
             and 0 <= int(p_range[0]) <= 65535
             and 0 <= int(p_range[1]) <= 65535
         ):

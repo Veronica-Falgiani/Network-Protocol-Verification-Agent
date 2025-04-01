@@ -1,0 +1,9 @@
+/*If telnet is open*/
+{
+  "protocol": "telnet",
+  "author": "Veronica Falgiani",
+  "tests": {
+    "if open": 
+    
+  }
+}
