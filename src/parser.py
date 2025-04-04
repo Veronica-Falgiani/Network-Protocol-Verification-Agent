@@ -28,7 +28,7 @@ def parser():
     )
     parser.add_argument(
         "ports",
-        help="Port [x], ports [x,y,z] or port range [x:y] to scan",
+        help="Single port [x], all ports [all], multiple ports [x,y,z] or port range [x:y] to scan",
     )
     parser.add_argument("host", help="Host to scan using ipv4 address")
 

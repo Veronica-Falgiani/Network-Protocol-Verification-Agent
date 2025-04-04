@@ -14,11 +14,11 @@ from imaplib import IMAP4, IMAP4_SSL
 def scan(ip: str, ports: list) -> dict:
     services = {}
 
-    # ssh_check(ip, ports, services)
+    ssh_check(ip, ports, services)
     http_check(ip, ports, services)
-    # https_check(ip, ports, services)
-    # ftp_check(ip, ports, services)
-    # dns_check(ip, ports, services)
+    https_check(ip, ports, services)
+    ftp_check(ip, ports, services)
+    dns_check(ip, ports, services)
     # pop_check(ip, ports, services)
     # popssl_check(ip, ports, services)
     # imap_check(ip, ports, services)
