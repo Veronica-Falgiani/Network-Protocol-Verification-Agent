@@ -6,7 +6,7 @@ import host_scan
 import port_scan
 import protocol_scan
 import execute_tests
-from datetime import datetime
+import write_result
 
 if __name__ == "__main__":
     args = parser.parser()
@@ -36,10 +36,4 @@ if __name__ == "__main__":
     # execute_tests.test(services)
 
     # Write to file results
-    file_name = "results_" + datetime.today().strftime("%Y-%m-%d_%H:%M:%S") + ".txt"
-    with open(file_name, "w") as res_file:
-        res_file.write("##### RESULTS #####\n\n")
-        res_file.write("PORT \t STATUS \t SERVICE\n")
-        res_file.write("----------------------------\n")
-        for port, status in found_ports.items():
-            res_file.write(f"{str(port)} \t {status} \t {services[port]}\n")
+    write_result.result(found_ports, services)
