@@ -40,8 +40,11 @@ def scan(port_s: str, ip: str, ports: list) -> dict:
 def port_parse(port_str: str) -> list:
     ports = []
 
+    if port_str == "all":
+        ports = list(range(0, 65536))
+
     # Contiguous port list
-    if ":" in port_str:
+    elif ":" in port_str:
         p_range = port_str.split(":")
 
         if (
