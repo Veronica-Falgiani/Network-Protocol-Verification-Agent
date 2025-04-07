@@ -5,26 +5,26 @@ from scapy.all import *
 
 
 # Selecting the right scan based on the user input
-def scan(port_s: str, ip: str, ports: list) -> dict:
+def scan(port_s: str, ip: str, ports: list):
     match port_s:
         case "c":
-            found_ports = tcp_connect_scan(ip, ports)
+            found_ports, ut = tcp_connect_scan(ip, ports)
         case "s":
-            found_ports = tcp_syn_scan(ip, ports)
+            found_ports, ut = tcp_syn_scan(ip, ports)
         # case "a":
         #    found_ports = tcp_ack_scan(ip, ports)
         # case "w":
         #    found_ports = tcp_window_scan(ip, ports)
         case "f":
-            found_ports = tcp_fin_scan(ip, ports)
+            found_ports, ut = tcp_fin_scan(ip, ports)
         case "n":
-            found_ports = tcp_null_scan(ip, ports)
+            found_ports, ut = tcp_null_scan(ip, ports)
         case "x":
-            found_ports = tcp_xmas_scan(ip, ports)
+            found_ports, ut = tcp_xmas_scan(ip, ports)
         case "u":
-            found_ports = udp_scan(ip, ports)
+            found_ports, ut = udp_scan(ip, ports)
         case None:
-            found_ports = tcp_syn_scan(ip, ports)
+            found_ports, ut = tcp_syn_scan(ip, ports)
         case _:
             print_fail("Cannot find scan type")
             sys.exit()
@@ -33,7 +33,7 @@ def scan(port_s: str, ip: str, ports: list) -> dict:
         print_fail("No open ports found!")
         sys.exit()
 
-    return found_ports
+    return found_ports, ut
 
 
 # Parsing ports we need to scan from user input
@@ -96,7 +96,7 @@ def list_open_ports(ports: dict) -> list:
 
     # Creates a list of ports that are open and open/filtered
     for key, value in ports.items():
-        if value != "closed" or value != "filtered":
+        if "closed" not in value or "filtered" not in value:
             open_ports.append(key)
 
     return open_ports
@@ -105,31 +105,35 @@ def list_open_ports(ports: dict) -> list:
 # Send: connect() (TCP with SYN)
 # Rec:  TCP with SYN/ACK -> open
 #       no response -> closed/filtered
-def tcp_connect_scan(ip: str, ports: list) -> dict:
+def tcp_connect_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(4)
-
         res = s.connect_ex((ip, port))
+
+        # Port open
         if res == 0:
             # print(f"{port} \t open")
             found_ports[port] = "open"
+
+        # Port closed/filtered
         else:
             pass
             # print(f"{port} \t closed/filtered")
-            # found_ports[port] = "open/filtered"
+            # found_ports[port] = "closed/filtered"
+
         s.close()
 
-    return found_ports
+    return (found_ports, "T")
 
 
 # Send: SYN
 # Rec:  SYN/ACK -> RST -> open
 #       RST -> closed
 #       no response/ICMP unreachable -> filtered
-def tcp_syn_scan(ip: str, ports: list) -> dict:
+def tcp_syn_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
@@ -154,7 +158,7 @@ def tcp_syn_scan(ip: str, ports: list) -> dict:
                 # print(f"{port} \t open")
                 found_ports[port] = "open"
 
-    return found_ports
+    return (found_ports, "T")
 
 
 # Send: ACK
@@ -214,7 +218,7 @@ def tcp_syn_scan(ip: str, ports: list) -> dict:
 # Rec:  no repsonse: open/filtered
 #       TCP RST -> closed
 #       ICMP UNREACHABLE -> filtered
-def tcp_fin_scan(ip: str, ports: list) -> dict:
+def tcp_fin_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
@@ -238,14 +242,14 @@ def tcp_fin_scan(ip: str, ports: list) -> dict:
                 # print(f"{port} \t filtered")
                 found_ports[port] = "filtered"
 
-    return found_ports
+    return (found_ports, "T")
 
 
 # Send: no bits set
 # Rec:  no repsonse: open/filtered
 #       TCP RST -> closed
 #       ICMP UNREACHABLE -> filtered
-def tcp_null_scan(ip: str, ports: list) -> dict:
+def tcp_null_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
@@ -269,14 +273,14 @@ def tcp_null_scan(ip: str, ports: list) -> dict:
                 # print(f"{port} \t filtered")
                 found_ports[port] = "filtered"
 
-    return found_ports
+    return (found_ports, "T")
 
 
 # Send: FIN PSH URG bits
 # Rec:  no repsonse: open/filtered
 #       TCP RST -> closed
 #       ICMP UNREACHABLE -> filtered
-def tcp_xmas_scan(ip: str, ports: list) -> dict:
+def tcp_xmas_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
@@ -300,7 +304,7 @@ def tcp_xmas_scan(ip: str, ports: list) -> dict:
                 # print(f"{port} \t filtered")
                 found_ports[port] = "filtered"
 
-    return found_ports
+    return (found_ports, "T")
 
 
 # Send: UDP with 0 bytes of data
@@ -308,7 +312,7 @@ def tcp_xmas_scan(ip: str, ports: list) -> dict:
 #       no response -> open/filtered
 #       ICMP port unreachable -> closed
 #       other ICMP errors -> filtered
-def udp_scan(ip: str, ports: list) -> dict:
+def udp_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
@@ -339,4 +343,4 @@ def udp_scan(ip: str, ports: list) -> dict:
                 # print(f"{port} \t open")
                 found_ports[port] = "open"
 
-    return found_ports
+    return (found_ports, "U")

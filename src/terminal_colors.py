@@ -20,3 +20,7 @@ def print_warning(string: str):
 
 def print_fail(string: str):
     print(bcolors.FAIL + string + bcolors.ENDC)
+
+
+def verbose_print(string: str):
+    print(bcolors.OKCYAN + string + bcolors.ENDC)

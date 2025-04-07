@@ -43,7 +43,7 @@ def ip_parse(ip: str):
 
 
 # Check if the host is up
-def ping_scan(ip: str):
+def ping_scan(ip: str) -> bool:
     res_status = False
 
     packet = IP(dst=ip, ttl=20) / ICMP()
@@ -55,7 +55,7 @@ def ping_scan(ip: str):
     return res_status
 
 
-def tcp_syn_scan(ip: str):
+def tcp_syn_scan(ip: str) -> bool:
     res_status = False
 
     for port in SCAN_PORTS:
@@ -70,7 +70,7 @@ def tcp_syn_scan(ip: str):
     return res_status
 
 
-def tcp_ack_scan(ip: str):
+def tcp_ack_scan(ip: str) -> bool:
     res_status = False
 
     for port in SCAN_PORTS:
@@ -85,7 +85,7 @@ def tcp_ack_scan(ip: str):
     return res_status
 
 
-def udp_scan(ip: str):
+def udp_scan(ip: str) -> bool:
     res_status = False
 
     # Using a probably unused port
