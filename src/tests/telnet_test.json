@@ -2,9 +2,9 @@
   "protocol": "telnet",
   "author": "Veronica Falgiani",
   "tests": {
-    "if open": {
-      "command": "bru",
-      "severity": "high:"
+    "IS OPEN": {
+      "description": "",
+      "severity": "high"
     }
   }
 }

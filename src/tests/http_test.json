@@ -2,8 +2,14 @@
   "protocol": "http",
   "author": "Veronica Falgiani",
   "tests": {
-    "check secure": {
-      "command": "if http",
+    "IS OPEN" :{
+      "description": "",
+      "severity": "medium"
+    },
+    "VULN": {
+      "description": "",
+      "send": "GET http",
+      "recv": "200",
       "severity": "medium"
     }
   }

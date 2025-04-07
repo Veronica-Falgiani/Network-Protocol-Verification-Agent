@@ -3,7 +3,15 @@
   "protocol": "protocol",
   "author": "John Doe",
   "tests": {
-    "first check": "command",
-    
+    "open": {
+      "True": "high"
+    },
+    "checks": {
+      "http-dlelete": {
+        "description": "asd",
+        "command": "DELETE / HTTP/1",
+        "severity": "medium"
+      }
+    }
   }
 }
