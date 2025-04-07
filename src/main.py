@@ -39,7 +39,8 @@ if __name__ == "__main__":
     protocol_scan.print_services(services)
 
     print("\nTesting protocols found: ")
-    execute_tests.print_test(services)
+    report = {}
+    report = execute_tests.print_test(services)
 
     # Write to file results
-    write_result.result(found_ports, services)
+    write_result.result(found_ports, services, report)

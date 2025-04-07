@@ -6,6 +6,9 @@ base_dir = os.path.dirname(__file__)
 
 
 def print_test(services: dict):
+    report = {}
+    results = {}
+
     print("PORT \t PROTOCOL")
 
     for port, prot in services.items():
@@ -18,23 +21,29 @@ def print_test(services: dict):
             tests = test_file["tests"]
 
             for name, info in tests.items():
-                if "send" in info:
-                    test(name, info)
+                if "recv" in info:
+                    test(name, info, results)
                 else:
+                    print("|")
                     print(f"|\\_ {name}")
                     print(f"|   severity: {info['severity']}")
-                    print(f"|")
+                    results[name] = info
+
+            report[port] = results.copy()
+            results.clear()
+
+    return report
 
 
-def test(name, info):
+def test(name, info, results):
     send = info["send"]
     recv = info["recv"]
-    res = "20"
-    print(send, recv)
+    res = "200"
 
     # Send and receive packages
 
     if recv == res:
+        print("|")
         print(f"|\\_ {name}")
         print(f"|   severity: {info['severity']}")
-        print(f"|")
+        results[name] = info
