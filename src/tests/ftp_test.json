@@ -1,0 +1,12 @@
+{
+  "protocol": "ftp",
+  "author": "Veronica Falgiani",
+  "tests": {
+    "ANONYMOUS LOGIN ENABLED" :{
+      "description": "",
+      "send": "\n~USER anonymous\n~PASS\n",
+      "recv": "230",
+      "severity": "high"
+    }
+  }
+}

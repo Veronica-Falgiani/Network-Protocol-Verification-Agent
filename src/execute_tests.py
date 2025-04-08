@@ -44,27 +44,39 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
     recv = None
     not_recv = None
 
-    send = info["send"]
+    send_str = info["send"]
+    send_list = send_str.split("~")
+
     if "recv" in info:
         recv = info["recv"]
     elif "not_recv" in info:
         not_recv = info["not_recv"]
 
-    print(recv, not_recv)
+    print(recv, not_recv, send_list)
 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
         sock.connect((ip, port))
-        sock.send(send.encode())
-        res = sock.recv(1024)
-        # print(res.decode())
 
-        if recv in res.decode() or not_recv in res.decode():
+        for send in send_list:
+            print(send)
+            sock.send(send.encode())
+            res = sock.recv(1024)
+            print(res.decode())
+
+        if (
+            recv is not None
+            and recv in res.decode()
+            or not_recv is not None
+            and not_recv in res.decode()
+        ):
             print("|")
             print(f"|\\_ {name}")
             print(f"|   severity: {info['severity']}")
             results[name] = info
+
+        sock.close()
 
     except TimeoutError:
         pass

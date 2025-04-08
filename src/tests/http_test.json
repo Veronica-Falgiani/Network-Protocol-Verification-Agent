@@ -2,7 +2,7 @@
   "protocol": "http",
   "author": "Veronica Falgiani",
   "tests": {
-    "IS OPEN" :{
+    "IS OPEN" : {
       "description": "Using HTTP instead of HTTPS can be dangerous when exchanging sensitive data",
       "severity": "medium"
     },
@@ -29,7 +29,6 @@
       "send": "GET / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
       "not_recv": "Strict-Transport-Security: max-age= ; includeSubDomains",
       "severity": "high"
-    },
-    ""
+    }
   }
 }
