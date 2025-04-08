@@ -1,11 +1,13 @@
 import json
 import os
+import socket
 from terminal_colors import print_warning, print_fail, print_ok
+import paramiko
 
 base_dir = os.path.dirname(__file__)
 
 
-def print_test(services: dict):
+def print_test(services: dict, ip: str) -> dict:
     report = {}
     results = {}
 
@@ -21,8 +23,10 @@ def print_test(services: dict):
             tests = test_file["tests"]
 
             for name, info in tests.items():
-                if "recv" in info:
-                    test(name, info, results)
+                if prot == "SSH":
+                    test_ssh(name, info, results, ip, port)
+                elif "recv" in info:
+                    test(name, info, results, ip, port)
                 else:
                     print("|")
                     print(f"|\\_ {name}")
@@ -35,15 +39,33 @@ def print_test(services: dict):
     return report
 
 
-def test(name, info, results):
+def test(name: str, info: dict, results: dict, ip: str, port: int):
     send = info["send"]
     recv = info["recv"]
-    res = "200"
 
-    # Send and receive packages
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(5)
+        sock.connect((ip, port))
+        sock.send(send.encode())
+        res = sock.recv(1024)
+        print(res.decode())
 
-    if recv == res:
-        print("|")
-        print(f"|\\_ {name}")
-        print(f"|   severity: {info['severity']}")
-        results[name] = info
+        if recv in res.decode():
+            print("|")
+            print(f"|\\_ {name}")
+            print(f"|   severity: {info['severity']}")
+            results[name] = info
+
+    except TimeoutError:
+        pass
+
+
+# Having to use paramiko to connect to ssh correctly
+def test_ssh(name: str, info: dict, results: dict, ip: str, port: int):
+    client = paramiko.client.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(ip, username="admin", password="")
+    _stdin, _stdout, _stderr = client.exec_command("df")
+    print(_stdout.read().decode())
+    client.close()

@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     print("\nTesting protocols found: ")
     report = {}
-    report = execute_tests.print_test(services)
+    report = execute_tests.print_test(services, ip)
 
     # Write to file results
     write_result.result(found_ports, services, report)

@@ -6,11 +6,23 @@
       "description": "",
       "severity": "medium"
     },
-    "VULN": {
+    "PUT METHOD ALLOWED": {
       "description": "",
-      "send": "GET http",
+      "send": "PUT / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
       "recv": "200",
       "severity": "medium"
+    },
+    "DELETE METHOD ALLOWED": {
+      "description": "",
+      "send": "DELETE / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
+      "recv": "200",
+      "severity": "medium"
+    },
+    "ARBITRATY HOST HEADER ALLOWED": {
+      "description": "",
+      "send": "TEST / HTTP/1.1",
+      "recv": "200",
+      "severity": "low"
     }
   }
 }
