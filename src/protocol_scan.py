@@ -10,6 +10,7 @@ from telnetlib import Telnet
 import dns.message, dns.query
 from poplib import POP3, POP3_SSL, error_proto
 from imaplib import IMAP4, IMAP4_SSL
+import ssl
 
 
 def TCP_scan(ip: str, ports: list) -> dict:

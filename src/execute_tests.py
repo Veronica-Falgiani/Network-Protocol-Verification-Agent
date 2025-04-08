@@ -1,4 +1,5 @@
 import json
+from logging import NullHandler
 import os
 import socket
 from terminal_colors import print_warning, print_fail, print_ok
@@ -40,8 +41,16 @@ def print_test(services: dict, ip: str) -> dict:
 
 
 def test(name: str, info: dict, results: dict, ip: str, port: int):
+    recv = None
+    not_recv = None
+
     send = info["send"]
-    recv = info["recv"]
+    if "recv" in info:
+        recv = info["recv"]
+    elif "not_recv" in info:
+        not_recv = info["not_recv"]
+
+    print(recv, not_recv)
 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,9 +58,9 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
         sock.connect((ip, port))
         sock.send(send.encode())
         res = sock.recv(1024)
-        print(res.decode())
+        # print(res.decode())
 
-        if recv in res.decode():
+        if recv in res.decode() or not_recv in res.decode():
             print("|")
             print(f"|\\_ {name}")
             print(f"|   severity: {info['severity']}")
