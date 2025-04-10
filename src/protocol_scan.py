@@ -10,24 +10,30 @@ from telnetlib import Telnet
 import dns.message, dns.query
 from poplib import POP3, POP3_SSL, error_proto
 from imaplib import IMAP4, IMAP4_SSL
-import ssl
+from impacket.smbconnection import SMBConnection, SessionError
 
 
 def TCP_scan(ip: str, ports: list) -> dict:
     services = {}
 
-    ssh_check(ip, ports, services)
-    http_check(ip, ports, services)
-    https_check(ip, ports, services)
-    ftp_check(ip, ports, services)
-    dns_check(ip, ports, services)
-    telnet_check(ip, ports, services)
+    # ssh_check(ip, ports, services)
+    # http_check(ip, ports, services)
+    # https_check(ip, ports, services)
+    # ftp_check(ip, ports, services)
+    # dns_check(ip, ports, services)
+    # telnet_check(ip, ports, services)
+
     # pop_check(ip, ports, services)
     # popssl_check(ip, ports, services)
     # imap_check(ip, ports, services)
     # imapssl_check(ip, ports, services)
-    smtp_check(ip, ports, services)
+
+    # smtp_check(ip, ports, services)
+
     # smtpssl_check(ip, ports, services)
+    # dhcp_check(ip, ports, services)
+
+    smb_check(ip, ports, services)
     undefined(ports, services)
 
     services = dict(sorted(services.items()))
@@ -62,11 +68,6 @@ def print_services(services: dict):
 
 
 def ssh_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 22 in open_ports:
-        open_ports.remove(22)
-        open_ports.insert(0, 22)
-
     for port in open_ports:
         s = socket.socket()
         s.settimeout(5)
@@ -88,11 +89,6 @@ def ssh_check(ip: str, open_ports: list, services: dict):
 
 
 def http_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 80 in open_ports:
-        open_ports.remove(80)
-        open_ports.insert(0, 80)
-
     for port in open_ports:
         url = f"http://{ip}:{port}"
         url = urlparse(url)
@@ -111,11 +107,6 @@ def http_check(ip: str, open_ports: list, services: dict):
 
 
 def https_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 443 in open_ports:
-        open_ports.remove(443)
-        open_ports.insert(0, 443)
-
     for port in open_ports:
         url = f"https://{ip}:{port}"
         url = urlparse(url)
@@ -134,11 +125,6 @@ def https_check(ip: str, open_ports: list, services: dict):
 
 
 def ftp_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 21 in open_ports:
-        open_ports.remove(21)
-        open_ports.insert(0, 21)
-
     for port in open_ports:
         try:
             ftp = FTP()
@@ -163,11 +149,6 @@ def ftp_check(ip: str, open_ports: list, services: dict):
 
 
 def dns_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 53 in open_ports:
-        open_ports.remove(53)
-        open_ports.insert(0, 53)
-
     for port in open_ports:
         try:
             query = dns.message.make_query(".", dns.rdatatype.SOA, flags=0)
@@ -181,11 +162,6 @@ def dns_check(ip: str, open_ports: list, services: dict):
 
 
 def smtp_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 25 in open_ports:
-        open_ports.remove(25)
-        open_ports.insert(0, 25)
-
     for port in open_ports:
         try:
             smtp = SMTP(host=ip, port=port, timeout=6)
@@ -241,11 +217,6 @@ def smtpssl_check(ip: str, open_ports: list, services: dict):
 
 
 def telnet_check(ip: str, open_ports: list, services: dict):
-    # Putting the default port at the start of the list if it's present
-    if 23 in open_ports:
-        open_ports.remove(23)
-        open_ports.insert(0, 23)
-
     for port in open_ports:
         try:
             telnet = Telnet(ip, port, timeout=3)
@@ -340,6 +311,27 @@ def dhcp_check(ip: str, open_ports: list, services: dict):
                 print(res[BOOTP].yiaddr, port)
             else:
                 print("No DHCP res")
+
+
+def smb_check(ip: str, open_ports: list, services: dict):
+    rem_ports = []
+
+    for port in open_ports:
+        try:
+            smb = SMBConnection("WORKGROUP", ip, sess_port=port, timeout=3)
+            print(port, smb)
+            smb.close()
+
+            # print(f"{port} \t SMB")
+            rem_ports.append(port)
+            services[port] = "SMB"
+
+            # smb.login("test", "test")
+        except:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
 
 
 def undefined(open_ports, services: dict):

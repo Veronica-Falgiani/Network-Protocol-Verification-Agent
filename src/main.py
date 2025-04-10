@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/home/landsend/Documenti/_Mega/Università/Tesi/Network-Protocol-Verification-Agent/myenv/bin/python3
 
 # Imports
 from importlib import util
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     print("\nTesting protocols found: ")
     report = {}
-    report = execute_tests.print_test(services, ip)
+    # report = execute_tests.print_test(services, ip)
 
     # Write to file results
-    write_result.result(found_ports, services, report)
+    # write_result.result(found_ports, services, report)
