@@ -12,13 +12,20 @@ def result(found_ports: dict, services: dict, report: dict):
         res_file.write("----------------------------\n")
 
         for port, status in found_ports.items():
-            res_file.write(f"\n{str(port)} \t {status} \t {services[port]}\n")
-            results = report[port]
+            if services[port] != "undefined":
+                res_file.write(f"\n{str(port)} \t {status} \t {services[port]}\n")
 
-            for name, info in results.items():
-                res_file.write(f"|\n")
-                res_file.write(f"|\\_ {name}\n")
-                res_file.write(f"|   description: {info['description']}\n")
-                res_file.write(f"|   severity: {info['severity']}\n")
+                if port in report.keys():
+                    results = report[port]
+
+                    for name, info in results.items():
+                        res_file.write("|\n")
+                        res_file.write(f"|\\_ {name}\n")
+                        res_file.write(f"|   description: {info['description']}\n")
+                        res_file.write(f"|   severity: {info['severity']}\n")
+
+                else:
+                    res_file.write("|\n")
+                    res_file.write("|\\_ --- NO TESTS FOUND FOR THIS PROTOCOL ---\n")
 
     print(f"\nResults can be found in: {file_name}")

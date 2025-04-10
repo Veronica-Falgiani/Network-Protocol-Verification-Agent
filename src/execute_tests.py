@@ -3,7 +3,6 @@ from logging import NullHandler
 import os
 import socket
 from terminal_colors import print_warning, print_fail, print_ok
-import paramiko
 
 base_dir = os.path.dirname(__file__)
 
@@ -19,23 +18,25 @@ def print_test(services: dict, ip: str) -> dict:
         rel_path = "tests/" + prot.lower() + "_test.json"
         path = os.path.join(base_dir, rel_path)
 
-        with open(path) as file:
-            test_file = json.load(file)
-            tests = test_file["tests"]
+        try:
+            with open(path) as file:
+                test_file = json.load(file)
+                tests = test_file["tests"]
 
-            for name, info in tests.items():
-                if prot == "SSH":
-                    test_ssh(name, info, results, ip, port)
-                elif "recv" in info:
-                    test(name, info, results, ip, port)
-                else:
-                    print("|")
-                    print(f"|\\_ {name}")
-                    print(f"|   severity: {info['severity']}")
-                    results[name] = info
+                for name, info in tests.items():
+                    if "recv" in info:
+                        test(name, info, results, ip, port)
+                    else:
+                        print("|")
+                        print(f"|\\_ {name}")
+                        print(f"|   severity: {info['severity']}")
+                        results[name] = info
 
-            report[port] = results.copy()
-            results.clear()
+                report[port] = results.copy()
+                results.clear()
+        except FileNotFoundError:
+            print("|")
+            print("|\\_ --- NO TESTS FOUND FOR THIS PROTOCOL ---")
 
     return report
 
@@ -45,7 +46,7 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
     not_recv = None
 
     send_str = info["send"]
-    send_list = send_str.split("~")
+    send_list = send_str.split(" ~ ")
 
     if "recv" in info:
         recv = info["recv"]
@@ -80,13 +81,3 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
 
     except TimeoutError:
         pass
-
-
-# Having to use paramiko to connect to ssh correctly
-def test_ssh(name: str, info: dict, results: dict, ip: str, port: int):
-    client = paramiko.client.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(ip, username="admin", password="")
-    _stdin, _stdout, _stderr = client.exec_command("df")
-    print(_stdout.read().decode())
-    client.close()
