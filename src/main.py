@@ -38,9 +38,9 @@ if __name__ == "__main__":
 
     print("\nVerifying protocols active on ports: ")
     if ut == "T":
-        services = protocol_scan.TCP_scan(ip, open_ports)
+        services = protocol_scan.test_scan(ip, open_ports)
     else:
-        services = protocol_scan.UDP_scan(ip, open_ports)
+        services = protocol_scan.test_scan(ip, open_ports)
 
     protocol_scan.print_services(services)
 
