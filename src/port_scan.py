@@ -3,6 +3,8 @@ import sys
 from terminal_colors import print_fail, print_warning
 from scapy.all import *
 
+THREADS = 4
+
 
 # Selecting the right scan based on the user input
 def scan(port_s: str, ip: str, ports: list):

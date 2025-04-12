@@ -24,7 +24,7 @@ def parser():
     parser.add_argument(
         "-ps",
         "--port_scan",
-        help="Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (syn scan will be used by default)",
+        help="Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default, others need sudo permissions)",
     )
     parser.add_argument(
         "ports",

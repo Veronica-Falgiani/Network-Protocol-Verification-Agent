@@ -1,8 +1,10 @@
 #!/home/landsend/Documenti/_Mega/Università/Tesi/Network-Protocol-Verification-Agent/myenv/bin/python3
 
 # Imports
-from importlib import util
+import os
+import sys
 import parser
+import terminal_colors
 import host_scan
 import port_scan
 import protocol_scan
@@ -10,6 +12,10 @@ import execute_tests
 import write_result
 
 if __name__ == "__main__":
+    if not "SUDO_UID" in os.environ:
+        terminal_colors.print_fail("This program requires sudo privileges")
+        sys.exit()
+
     args = parser.parser()
 
     host_s = args.host_scan

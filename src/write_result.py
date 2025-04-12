@@ -5,6 +5,7 @@ import os
 def result(found_ports: dict, services: dict, report: dict):
     file_name = "res/results_" + datetime.today().strftime("%Y-%m-%d_%H:%M:%S") + ".txt"
     os.makedirs(os.path.dirname(file_name), exist_ok=True)
+    os.chmod("res/", 0o777)
 
     with open(file_name, "w") as res_file:
         res_file.write("##### RESULTS #####\n\n")
