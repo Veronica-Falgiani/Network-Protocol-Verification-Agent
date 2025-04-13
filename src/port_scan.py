@@ -26,7 +26,7 @@ def scan(port_s: str, ip: str, ports: list):
         case "u":
             found_ports, ut = udp_scan(ip, ports)
         case None:
-            found_ports, ut = tcp_syn_scan(ip, ports)
+            found_ports, ut = tcp_connect_scan(ip, ports)
         case _:
             print_fail("Cannot find scan type")
             sys.exit()
@@ -111,6 +111,7 @@ def tcp_connect_scan(ip: str, ports: list) -> tuple:
     found_ports = {}
 
     for port in ports:
+        print(port, end="\r")
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(4)
         res = s.connect_ex((ip, port))

@@ -17,6 +17,21 @@ def test_scan(ip: str, ports: list) -> dict:
     services = {}
 
     # Write portocols to test here
+    ssh_check(ip, ports, services)
+    http_check(ip, ports, services)
+    https_check(ip, ports, services)
+    ftp_check(ip, ports, services)
+    dns_check(ip, ports, services)
+    telnet_check(ip, ports, services)
+
+    # pop_check(ip, ports, services)
+    # imap_check(ip, ports, services)
+
+    smtp_check(ip, ports, services)
+    smb_check(ip, ports, services)
+
+    # dhcp_check(ip, ports, services)
+    # rdp_check(ip, ports, services)
     ssltls_check(ip, ports, services)
 
     undefined(ports, services)
@@ -40,12 +55,12 @@ def TCP_scan(ip: str, ports: list) -> dict:
     # imap_check(ip, ports, services)
 
     smtp_check(ip, ports, services)
+    smb_check(ip, ports, services)
 
     # dhcp_check(ip, ports, services)
     # rdp_check(ip, ports, services)
-    # ssltls_check(ip, ports, services)
+    ssltls_check(ip, ports, services)
 
-    smb_check(ip, ports, services)
     undefined(ports, services)
 
     services = dict(sorted(services.items()))
@@ -317,7 +332,6 @@ def smb_check(ip: str, open_ports: list, services: dict):
     for port in open_ports:
         try:
             smb = SMBConnection("WORKGROUP", ip, sess_port=port, timeout=3)
-            print(port, smb)
             smb.close()
 
             # print(f"{port} \t SMB")
@@ -344,8 +358,22 @@ def ssltls_check(ip: str, open_ports: list, services: dict):
 
             ssock.connect((ip, port))
             ssock.close()
-        except Exception as e:
-            print(port, e)
+
+            rem_ports.append(port)
+            services[port] = "SSL/TLS"
+
+        except TimeoutError:
+            pass
+
+        except ConnectionResetError:
+            pass
+
+        except ssl.SSLError as e:
+            if "WRONG_VERSION_NUMBER" in str(e):
+                rem_ports.append(port)
+                services[port] = "SSL/TLS"
+
+            # print(port, e)
 
     for port in rem_ports:
         open_ports.remove(port)
