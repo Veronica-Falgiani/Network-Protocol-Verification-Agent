@@ -1,9 +1,10 @@
 import socket
 from terminal_colors import verbose_print
 from scapy.all import *
-from ssl import SSLError
+from ssl import SSLCertVerificationError, SSLContext, SSLError
 from urllib.parse import urlparse
 from http.client import HTTPConnection, HTTPSConnection
+import requests
 from ftplib import FTP
 from smtplib import SMTP
 from telnetlib import Telnet
@@ -13,26 +14,22 @@ from poplib import POP3, error_proto
 from imaplib import IMAP4
 from impacket.smbconnection import SMBConnection
 
+# Defining self signed certificate for tls/ssl
+context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
+context.load_verify_locations("src/cert/domain.crt")
+
 
 def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
-    ssh_check(ip, ports, services, verbose)
+    # pop_check(ip, ports, services, verbose)
+    # imap_check(ip, ports, services, verbose)
+    smb_check(ip, ports, services, verbose)
     http_check(ip, ports, services, verbose)
     https_check(ip, ports, services, verbose)
-    ftp_check(ip, ports, services, verbose)
-    dns_check(ip, ports, services, verbose)
-    telnet_check(ip, ports, services, verbose)
-
-    # pop_check(ip, ports, services)
-    # imap_check(ip, ports, services)
 
     smtp_check(ip, ports, services, verbose)
-    smb_check(ip, ports, services, verbose)
-
-    # dhcp_check(ip, ports, services)
-    # rdp_check(ip, ports, services)
     ssltls_check(ip, ports, services, verbose)
 
     undefined(ports, services, verbose)
@@ -148,8 +145,9 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
         try:
             conn = HTTPConnection(url.netloc, timeout=3)
             conn.request("HEAD", url.path)
+            res = conn.getresponse()
 
-            if conn.getresponse():
+            if res.status < 400:
                 # print(f"{port} \t HTTP")
                 rem_ports.append(port)
                 services[port] = "HTTP"
@@ -173,10 +171,11 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
         url = urlparse(url)
 
         try:
-            conn = HTTPSConnection(url.netloc, timeout=3)
+            conn = HTTPSConnection(url.netloc, timeout=3, context=context)
             conn.request("HEAD", url.path)
+            res = conn.getresponse()
 
-            if conn.getresponse():
+            if res.status < 400:
                 # print(f"{port} \t HTTPS")
                 rem_ports.append(port)
                 services[port] = "HTTPS"
@@ -409,7 +408,6 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for SSL/TLS")
 
         try:
-            context = ssl.create_default_context()
             sock = socket.create_connection((ip, port), timeout=3)
 
             ssock = context.wrap_socket(sock, server_hostname=ip)
@@ -419,6 +417,9 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             rem_ports.append(port)
             services[port] = "SSL/TLS"
+
+        # except Exception as e:
+        # print(port, e)
 
         except TimeoutError:
             pass
@@ -430,8 +431,6 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
                 services[port] = "SSL/TLS"
-
-            # print(port, e)
 
     for port in rem_ports:
         open_ports.remove(port)
