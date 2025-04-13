@@ -27,7 +27,7 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     # imap_check(ip, ports, services, verbose)
     smb_check(ip, ports, services, verbose)
     http_check(ip, ports, services, verbose)
-    https_check(ip, ports, services, verbose)
+    # https_check(ip, ports, services, verbose)
 
     smtp_check(ip, ports, services, verbose)
     ssltls_check(ip, ports, services, verbose)
@@ -409,10 +409,8 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             sock = socket.create_connection((ip, port), timeout=3)
-
             ssock = context.wrap_socket(sock, server_hostname=ip)
 
-            ssock.connect((ip, port))
             ssock.close()
 
             rem_ports.append(port)
