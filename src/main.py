@@ -28,22 +28,25 @@ if __name__ == "__main__":
     host_scan.ip_parse(ip)
     ports_list = port_scan.port_parse(ports_str)
 
+    # Host scan
     print("\nVerifying that the host is up: ")
-    host_scan.scan(host_s, ip)
+    host_scan.scan(host_s, ip, verbose)
 
+    # Port scan
     print("\nStarting port scan: ")
-    found_ports, ut = port_scan.scan(port_s, ip, ports_list)
+    found_ports, ut = port_scan.scan(port_s, ip, ports_list, verbose)
     port_scan.print_ports(found_ports)
     open_ports = port_scan.list_open_ports(found_ports)
 
+    # Protocol scan TCP/UDP
     print("\nVerifying protocols active on ports: ")
     if ut == "T":
-        services = protocol_scan.test_scan(ip, open_ports)
+        services = protocol_scan.test_scan(ip, open_ports, verbose)
     else:
-        services = protocol_scan.test_scan(ip, open_ports)
-
+        services = protocol_scan.test_scan(ip, open_ports, verbose)
     protocol_scan.print_services(services)
 
+    # Testing all protocols
     print("\nTesting protocols found: ")
     report = {}
     report = execute_tests.print_test(services, ip)

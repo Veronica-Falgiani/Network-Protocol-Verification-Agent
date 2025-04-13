@@ -1,14 +1,17 @@
 import sys
 import socket
-from terminal_colors import print_fail, print_ok
+from terminal_colors import print_fail, print_ok, verbose_print
 from scapy.all import *
 
 SCAN_PORTS = [21, 22, 80, 443]
 
 
 # Selecting the right scan based on the user input
-def scan(host_s, ip):
+def scan(host_s: str, ip: str, verbose: bool):
     ip_parse(ip)
+
+    if verbose:
+        verbose_print(f"Verifying {ip}")
 
     match host_s:
         case "p":
@@ -24,6 +27,9 @@ def scan(host_s, ip):
         case _:
             print_fail("Cannot find host scan type")
             sys.exit()
+
+    # Clean line
+    print("\033[K", end="\r")
 
     if res_status:
         print_ok("Host is up")

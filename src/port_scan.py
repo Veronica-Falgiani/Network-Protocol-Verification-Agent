@@ -1,35 +1,34 @@
 import socket
 import sys
-from terminal_colors import print_fail, print_warning
+from terminal_colors import print_fail, print_warning, verbose_print
 from scapy.all import *
 
 THREADS = 4
 
 
 # Selecting the right scan based on the user input
-def scan(port_s: str, ip: str, ports: list):
+def scan(port_s: str, ip: str, ports: list, verbose: bool):
     match port_s:
         case "c":
-            found_ports, ut = tcp_connect_scan(ip, ports)
+            found_ports, ut = tcp_connect_scan(ip, ports, verbose)
         case "s":
-            found_ports, ut = tcp_syn_scan(ip, ports)
-        # case "a":
-        #    found_ports = tcp_ack_scan(ip, ports)
-        # case "w":
-        #    found_ports = tcp_window_scan(ip, ports)
+            found_ports, ut = tcp_syn_scan(ip, ports, verbose)
         case "f":
-            found_ports, ut = tcp_fin_scan(ip, ports)
+            found_ports, ut = tcp_fin_scan(ip, ports, verbose)
         case "n":
-            found_ports, ut = tcp_null_scan(ip, ports)
+            found_ports, ut = tcp_null_scan(ip, ports, verbose)
         case "x":
-            found_ports, ut = tcp_xmas_scan(ip, ports)
+            found_ports, ut = tcp_xmas_scan(ip, ports, verbose)
         case "u":
-            found_ports, ut = udp_scan(ip, ports)
+            found_ports, ut = udp_scan(ip, ports, verbose)
         case None:
-            found_ports, ut = tcp_connect_scan(ip, ports)
+            found_ports, ut = tcp_connect_scan(ip, ports, verbose)
         case _:
             print_fail("Cannot find scan type")
             sys.exit()
+
+    # Clean line
+    print("\033[K", end="\r")
 
     if len(found_ports) == 0:
         print_fail("No open ports found!")
@@ -107,11 +106,14 @@ def list_open_ports(ports: dict) -> list:
 # Send: connect() (TCP with SYN)
 # Rec:  TCP with SYN/ACK -> open
 #       no response -> closed/filtered
-def tcp_connect_scan(ip: str, ports: list) -> tuple:
+def tcp_connect_scan(ip: str, ports: list, verbose: bool) -> tuple:
     found_ports = {}
 
     for port in ports:
-        print(port, end="\r")
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Testing {port}")
+
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(4)
         res = s.connect_ex((ip, port))
@@ -136,10 +138,14 @@ def tcp_connect_scan(ip: str, ports: list) -> tuple:
 # Rec:  SYN/ACK -> RST -> open
 #       RST -> closed
 #       no response/ICMP unreachable -> filtered
-def tcp_syn_scan(ip: str, ports: list) -> tuple:
+def tcp_syn_scan(ip: str, ports: list, verbose: bool) -> tuple:
     found_ports = {}
 
     for port in ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Testing {port}")
+
         packet = IP(dst=ip) / TCP(dport=port, flags="S")
         res = sr1(packet, timeout=5, verbose=0)
 
@@ -164,67 +170,18 @@ def tcp_syn_scan(ip: str, ports: list) -> tuple:
     return (found_ports, "T")
 
 
-# Send: ACK
-# Res:  no response after tumeout/ICMP unreachable error -> filtered
-#       RST -> unfiltered
-# def tcp_ack_scan(ip: str, ports: list):
-#    open_ports = []
-#
-#    for port in ports:
-#        packet = IP(dst=ip) / TCP(dport=port, flags="A")
-#        res = sr1(packet, timeout=5, verbose=0)
-#        if res is None or (
-#            res.sprintf("%ICMP.type%") == 3
-#            and res.sprintf("%ICMP.code%") in [1, 2, 3, 9, 10, 13]
-#        ):
-#            print(f"{port} \t filtered")
-#
-#        else:
-#            flag_res = res.sprintf("%TCP.flags%")
-#
-#            if flag_res == "R":
-#                print(f"{port} \t unfiltered")
-#                open_ports.append(port)
-#            else:
-#                print(f"{port} \t filtered")
-#
-#   return open_ports
-
-
-# Send: ACK
-# Res:  RST with non-zero window field -> open
-#       RST with zero window field -> closed
-#       no response/ICMP unreachable -> filtered
-# def tcp_window_scan(ip: str, ports: list):
-#    open_ports = []
-#
-#    for port in ports:
-#        packet = IP(dst=ip) / TCP(dport=port, flags="A")
-#        res = sr1(packet, timeout=5, verbose=0)
-#        if res == None or res.sprintf("%ICMP.type%") == 3:
-#            print(f"{port} \t filtered")
-#
-#        else:
-#            flag_res = res.sprintf("%TCP.flags%")
-#
-#            if flag_res == "R":
-#                if res.window > 0:
-#                    print(f"{port} \t open")
-#                    oprn_ports.append(port)
-#                elif res.window == 0:
-#                    pass
-#                    # print(f"{port} \t closed")
-#    return oprn_ports
-
-
 # Send: FIN bit on
 # Rec:  no repsonse: open/filtered
 #       TCP RST -> closed
 #       ICMP UNREACHABLE -> filtered
-def tcp_fin_scan(ip: str, ports: list) -> tuple:
+def tcp_fin_scan(ip: str, ports: list, verbose: bool) -> tuple:
     found_ports = {}
 
     for port in ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Testing {port}")
+
         packet = IP(dst=ip) / TCP(dport=port, flags="F")
         res = sr1(packet, timeout=5, verbose=0)
 
@@ -252,10 +209,14 @@ def tcp_fin_scan(ip: str, ports: list) -> tuple:
 # Rec:  no repsonse: open/filtered
 #       TCP RST -> closed
 #       ICMP UNREACHABLE -> filtered
-def tcp_null_scan(ip: str, ports: list) -> tuple:
+def tcp_null_scan(ip: str, ports: list, verbose: bool) -> tuple:
     found_ports = {}
 
     for port in ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Testing {port}")
+
         packet = IP(dst=ip) / TCP(dport=port, flags="")
         res = sr1(packet, timeout=5, verbose=0)
 
@@ -283,10 +244,14 @@ def tcp_null_scan(ip: str, ports: list) -> tuple:
 # Rec:  no repsonse: open/filtered
 #       TCP RST -> closed
 #       ICMP UNREACHABLE -> filtered
-def tcp_xmas_scan(ip: str, ports: list) -> tuple:
+def tcp_xmas_scan(ip: str, ports: list, verbose: bool) -> tuple:
     found_ports = {}
 
     for port in ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Testing {port}")
+
         packet = IP(dst=ip) / TCP(dport=port, flags="FPU")
         res = sr1(packet, timeout=5, verbose=0)
 
@@ -315,10 +280,14 @@ def tcp_xmas_scan(ip: str, ports: list) -> tuple:
 #       no response -> open/filtered
 #       ICMP port unreachable -> closed
 #       other ICMP errors -> filtered
-def udp_scan(ip: str, ports: list) -> tuple:
+def udp_scan(ip: str, ports: list, verbose: bool) -> tuple:
     found_ports = {}
 
     for port in ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Testing {port}")
+
         packet = IP(dst=ip) / UDP(dport=port) / "Hello"
         res = sr1(packet, timeout=3, verbose=0)
 

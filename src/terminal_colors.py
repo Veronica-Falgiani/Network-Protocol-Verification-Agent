@@ -23,4 +23,4 @@ def print_fail(string: str):
 
 
 def verbose_print(string: str):
-    print(bcolors.OKCYAN + string + bcolors.ENDC)
+    print(bcolors.OKCYAN + string + bcolors.ENDC, end="\r")
