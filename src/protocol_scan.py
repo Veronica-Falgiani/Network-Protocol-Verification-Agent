@@ -3,14 +3,14 @@ from terminal_colors import verbose_print
 from scapy.all import *
 from ssl import SSLCertVerificationError, SSLContext, SSLError
 from urllib.parse import urlparse
-from http.client import HTTPConnection, HTTPSConnection
+from http.client import HTTPConnection, HTTPSConnection, BadStatusLine
 import requests
 from ftplib import FTP
 from smtplib import SMTP
 from telnetlib import Telnet
 import ssl
 import dns.message, dns.query
-from poplib import POP3, error_proto
+from poplib import POP3, POP3_SSL, error_proto
 from imaplib import IMAP4
 from impacket.smbconnection import SMBConnection
 
@@ -23,15 +23,10 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
-    # pop_check(ip, ports, services, verbose)
-    # imap_check(ip, ports, services, verbose)
-    smb_check(ip, ports, services, verbose)
-    http_check(ip, ports, services, verbose)
-    # https_check(ip, ports, services, verbose)
-
+    pop_check(ip, ports, services, verbose)
+    imap_check(ip, ports, services, verbose)
     smtp_check(ip, ports, services, verbose)
-    ssltls_check(ip, ports, services, verbose)
-
+    # ssltls_check(ip, ports, services, verbose)
     undefined(ports, services, verbose)
 
     print("\033[K", end="\r")
@@ -50,21 +45,19 @@ def TCP_scan(ip: str, ports: list, verbose: bool) -> dict:
     ftp_check(ip, ports, services, verbose)
     dns_check(ip, ports, services, verbose)
     telnet_check(ip, ports, services, verbose)
-
-    # pop_check(ip, ports, services)
-    # imap_check(ip, ports, services)
-
     smtp_check(ip, ports, services, verbose)
     smb_check(ip, ports, services, verbose)
+    pop_check(ip, ports, services, verbose)
+    imap_check(ip, ports, services, verbose)
 
     # dhcp_check(ip, ports, services)
     # rdp_check(ip, ports, services)
+
     ssltls_check(ip, ports, services, verbose)
 
     undefined(ports, services, verbose)
 
-    undefined(ports, services, verbose)
-
+    # Clearing line for verbose print
     print("\033[K", end="\r")
 
     services = dict(sorted(services.items()))
@@ -79,15 +72,10 @@ def UDP_scan(ip: str, ports: list, verbose: bool) -> dict:
     https_check(ip, ports, services, verbose)
     dns_check(ip, ports, services, verbose)
     dhcp_check(ip, ports, services, verbose)  # Not working
-    # pop_check(ip, ports, services)
-    # popssl_check(ip, ports, services)
     # imap_check(ip, ports, services)
-    # imapssl_check(ip, ports, services)
-    smtp_check(ip, ports, services, verbose)
-    # smtpssl_check(ip, ports, services)
     undefined(ports, services, verbose)
 
-    # Clean line
+    # Clean line for verbose print
     print("\033[K", end="\r")
 
     services = dict(sorted(services.items()))
@@ -95,12 +83,16 @@ def UDP_scan(ip: str, ports: list, verbose: bool) -> dict:
     return services
 
 
-def print_services(services: dict):
+# Prints the result of the protocol scan
+def print_protocol(services: dict):
     print("PORT \t SERVICE")
     for key, value in services.items():
         print(f"{key} \t {value}")
 
 
+# --------------------------
+# SSH
+# --------------------------
 def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -114,6 +106,7 @@ def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
         s.connect((ip, port))
 
         try:
+            # Checks if the banner of the connection contains SSH
             banner = s.recv(1024)
             banner = banner.decode("utf-8", errors="ignore")
 
@@ -131,6 +124,9 @@ def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# HTTP
+# --------------------------
 def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -143,10 +139,12 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
         url = urlparse(url)
 
         try:
+            # Tries to establish a connection using HTTP
             conn = HTTPConnection(url.netloc, timeout=3)
             conn.request("HEAD", url.path)
             res = conn.getresponse()
 
+            # Verifies that the response is valid
             if res.status < 400:
                 # print(f"{port} \t HTTP")
                 rem_ports.append(port)
@@ -159,6 +157,9 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# HTTPS
+# --------------------------
 def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -187,6 +188,9 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# FTP
+# --------------------------
 def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -220,6 +224,9 @@ def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# DNS
+# --------------------------
 def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -242,6 +249,9 @@ def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# SMTP
+# --------------------------
 def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -275,6 +285,9 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# TELNET
+# --------------------------
 def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -300,6 +313,9 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# POP - FURTHER TESTING
+# --------------------------
 def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -309,22 +325,23 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for POP")
 
         try:
-            pop = POP3(ip, port, timeout=3)
+            pop = POP3(ip, timeout=3)
             # print(f"{port} \t POP3")
             rem_ports.append(port)
             services[port] = "POP"
 
-        except error_proto:
-            print(str(port) + "Error proto")
-
-        except IOError as e:
-            print("POP" + str(port) + str(e))
+        except:
             pass
+        # except Exception as e:
+        #    print("POP " + str(port) + str(e))
 
     for port in rem_ports:
         open_ports.remove(port)
 
 
+# --------------------------
+# IMAP - FURTHER TESTING
+# --------------------------
 def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -343,10 +360,16 @@ def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
         except:
             pass
 
+        # except Exception as e:
+        #    print("IMAP " + str(port) + str(e))
+
     for port in rem_ports:
         open_ports.remove(port)
 
 
+# --------------------------
+# DHCP -TODO
+# --------------------------
 def dhcp_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -375,6 +398,9 @@ def dhcp_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# SMB
+# --------------------------
 def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -399,6 +425,9 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# HTTPS - FIX
+# --------------------------
 def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
@@ -434,6 +463,9 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
         open_ports.remove(port)
 
 
+# --------------------------
+# UNDEFINED
+# --------------------------
 def undefined(open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
         if verbose:
