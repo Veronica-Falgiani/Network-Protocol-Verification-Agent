@@ -11,7 +11,7 @@ from telnetlib import Telnet
 import ssl
 import dns.message, dns.query
 from poplib import POP3, POP3_SSL, error_proto
-from imaplib import IMAP4
+from imaplib import IMAP4, IMAP4_SSL
 from impacket.smbconnection import SMBConnection
 
 # Defining self signed certificate for tls/ssl
@@ -23,10 +23,19 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
-    pop_check(ip, ports, services, verbose)
-    imap_check(ip, ports, services, verbose)
+    http_check(ip, ports, services, verbose)
+    https_check(ip, ports, services, verbose)
     smtp_check(ip, ports, services, verbose)
-    # ssltls_check(ip, ports, services, verbose)
+    pop_check(ip, ports, services, verbose)
+    pops_check(ip, ports, services, verbose)
+    imap_check(ip, ports, services, verbose)
+    imaps_check(ip, ports, services, verbose)
+
+    # dhcp_check(ip, ports, services)
+    # rdp_check(ip, ports, services)
+
+    ssltls_check(ip, ports, services, verbose)
+
     undefined(ports, services, verbose)
 
     print("\033[K", end="\r")
@@ -117,7 +126,7 @@ def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             s.close()
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -150,7 +159,7 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
                 rem_ports.append(port)
                 services[port] = "HTTP"
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -181,7 +190,7 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
                 rem_ports.append(port)
                 services[port] = "HTTPS"
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -217,7 +226,7 @@ def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             s.close()
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -242,7 +251,7 @@ def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
             rem_ports.append(port)
             services[port] = "DNS"
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -278,7 +287,7 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             s.close()
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -306,7 +315,7 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             telnet.close()
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -314,7 +323,7 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# POP - FURTHER TESTING
+# POP
 # --------------------------
 def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
@@ -325,22 +334,46 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for POP")
 
         try:
-            pop = POP3(ip, timeout=3)
+            pop = POP3(ip, port, timeout=3)
+            pop.quit()
             # print(f"{port} \t POP3")
             rem_ports.append(port)
             services[port] = "POP"
 
-        except:
+        except Exception:
             pass
-        # except Exception as e:
-        #    print("POP " + str(port) + str(e))
 
     for port in rem_ports:
         open_ports.remove(port)
 
 
 # --------------------------
-# IMAP - FURTHER TESTING
+# POPS
+# --------------------------
+def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for POP/SSL")
+
+        try:
+            pops = POP3_SSL(ip, port, timeout=3, context=context)
+            pops.quit()
+            # print(f"{port} \t POP3")
+            rem_ports.append(port)
+            services[port] = "POP/SSL"
+
+        except Exception:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# IMAP
 # --------------------------
 def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
@@ -351,17 +384,37 @@ def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for IMAP")
 
         try:
-            print(port)
             imap = IMAP4(ip, port, timeout=3)
             # print(f"{port} \t IMAP")
             rem_ports.append(port)
             services[port] = "IMAP"
 
-        except:
+        except Exception:
             pass
 
-        # except Exception as e:
-        #    print("IMAP " + str(port) + str(e))
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# IMAP/SSL
+# --------------------------
+def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for IMAP/SSL")
+
+        try:
+            imap = IMAP4_SSL(ip, port, timeout=3, ssl_context=context)
+            # print(f"{port} \t IMAP")
+            rem_ports.append(port)
+            services[port] = "IMAP/SSL"
+
+        except Exception:
+            pass
 
     for port in rem_ports:
         open_ports.remove(port)
@@ -418,7 +471,7 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
             services[port] = "SMB"
 
             # smb.login("test", "test")
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:
@@ -490,7 +543,7 @@ def check(ip: str, open_ports: list, services: dict, verbose: bool):
             rem_ports.append(port)
             services[port] = "SSL/TLS"
 
-        except:
+        except Exception:
             pass
 
     for port in rem_ports:

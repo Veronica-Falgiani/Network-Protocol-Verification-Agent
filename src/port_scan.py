@@ -3,8 +3,6 @@ import sys
 from terminal_colors import print_fail, print_warning, verbose_print
 from scapy.all import *
 
-THREADS = 4
-
 
 # Selecting the right scan based on the user input
 def scan(port_s: str, ip: str, ports: list, verbose: bool):
@@ -86,18 +84,20 @@ def port_parse(port_str: str) -> list:
     return ports
 
 
+#
 def print_ports(ports: dict):
     print("PORT \t STATUS")
     for key, value in ports.items():
         print(f"{key} \t {value}")
 
 
+# From a dict of all ports returns a list of open ports
 def list_open_ports(ports: dict) -> list:
     open_ports = []
 
     # Creates a list of ports that are open and open/filtered
     for key, value in ports.items():
-        if "closed" not in value or "filtered" not in value:
+        if value != "closed" or value != "filtered":
             open_ports.append(key)
 
     return open_ports
@@ -115,7 +115,7 @@ def tcp_connect_scan(ip: str, ports: list, verbose: bool) -> tuple:
             verbose_print(f"Testing {port}")
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(4)
+        s.settimeout(3)
         res = s.connect_ex((ip, port))
 
         # Port open
@@ -147,7 +147,7 @@ def tcp_syn_scan(ip: str, ports: list, verbose: bool) -> tuple:
             verbose_print(f"Testing {port}")
 
         packet = IP(dst=ip) / TCP(dport=port, flags="S")
-        res = sr1(packet, timeout=5, verbose=0)
+        res = sr1(packet, timeout=3, verbose=0)
 
         if res is None or (
             res.sprintf("%ICMP.type%") == 3
@@ -183,7 +183,7 @@ def tcp_fin_scan(ip: str, ports: list, verbose: bool) -> tuple:
             verbose_print(f"Testing {port}")
 
         packet = IP(dst=ip) / TCP(dport=port, flags="F")
-        res = sr1(packet, timeout=5, verbose=0)
+        res = sr1(packet, timeout=3, verbose=0)
 
         if res is None:
             # print(f"{port} \t open/filtered")
@@ -218,7 +218,7 @@ def tcp_null_scan(ip: str, ports: list, verbose: bool) -> tuple:
             verbose_print(f"Testing {port}")
 
         packet = IP(dst=ip) / TCP(dport=port, flags="")
-        res = sr1(packet, timeout=5, verbose=0)
+        res = sr1(packet, timeout=3, verbose=0)
 
         if res is None:
             # print(f"{port} \t open/filtered")
@@ -253,7 +253,7 @@ def tcp_xmas_scan(ip: str, ports: list, verbose: bool) -> tuple:
             verbose_print(f"Testing {port}")
 
         packet = IP(dst=ip) / TCP(dport=port, flags="FPU")
-        res = sr1(packet, timeout=5, verbose=0)
+        res = sr1(packet, timeout=3, verbose=0)
 
         if res is None:
             # print(f"{port} \t open/filtered")

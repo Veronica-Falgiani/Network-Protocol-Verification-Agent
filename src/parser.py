@@ -1,6 +1,6 @@
 import argparse
 
-# python3 main.py -hs A -ss B -p 1234 -h 1234
+# python3 main.py -hs p -ps s 100:200 192.168.0.1
 
 
 def parser():

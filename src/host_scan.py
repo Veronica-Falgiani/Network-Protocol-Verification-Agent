@@ -38,6 +38,7 @@ def scan(host_s: str, ip: str, verbose: bool):
         sys.exit()
 
 
+# Parses ip from user input
 def ip_parse(ip: str):
     if ip == "localhost":
         ip = "127.0.0.1"
@@ -48,7 +49,9 @@ def ip_parse(ip: str):
         sys.exit()
 
 
-# Check if the host is up
+# --------------------------
+# PING
+# --------------------------
 def ping_scan(ip: str) -> bool:
     res_status = False
 
@@ -61,6 +64,9 @@ def ping_scan(ip: str) -> bool:
     return res_status
 
 
+# --------------------------
+# TCP SYN
+# --------------------------
 def tcp_syn_scan(ip: str) -> bool:
     res_status = False
 
@@ -76,6 +82,9 @@ def tcp_syn_scan(ip: str) -> bool:
     return res_status
 
 
+# --------------------------
+# TCP ACK
+# --------------------------
 def tcp_ack_scan(ip: str) -> bool:
     res_status = False
 
@@ -91,6 +100,9 @@ def tcp_ack_scan(ip: str) -> bool:
     return res_status
 
 
+# --------------------------
+# UDP
+# --------------------------
 def udp_scan(ip: str) -> bool:
     res_status = False
 

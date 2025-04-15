@@ -44,7 +44,7 @@ if __name__ == "__main__":
         services = protocol_scan.test_scan(ip, open_ports, verbose)
     else:
         services = protocol_scan.test_scan(ip, open_ports, verbose)
-    protocol_scan.print_services(services)
+    protocol_scan.print_protocol(services)
 
     # Testing all protocols
     print("\nTesting protocols found: ")

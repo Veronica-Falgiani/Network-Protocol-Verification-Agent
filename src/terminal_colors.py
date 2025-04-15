@@ -10,17 +10,21 @@ class bcolors:
     UNDERLINE = "\033[4m"
 
 
+# Green print
 def print_ok(string: str):
     print(bcolors.OKGREEN + string + bcolors.ENDC)
 
 
+# Yellow print
 def print_warning(string: str):
     print(bcolors.WARNING + string + bcolors.ENDC)
 
 
+# Red print
 def print_fail(string: str):
     print(bcolors.FAIL + string + bcolors.ENDC)
 
 
+# Cyan print
 def verbose_print(string: str):
     print(bcolors.OKCYAN + string + bcolors.ENDC, end="\r")
