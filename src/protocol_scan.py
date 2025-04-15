@@ -11,6 +11,10 @@ import dns.message, dns.query
 from poplib import POP3, POP3_SSL
 from imaplib import IMAP4, IMAP4_SSL
 from impacket.smbconnection import SMBConnection
+import hashlib
+import struct
+import bencodepy
+import requests
 
 # Defining self signed certificate for tls/ssl
 context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
@@ -21,6 +25,10 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
+    gnutella_check(ip, ports, services, verbose)
+
+    # All protocols
+    """
     ftp_check(ip, ports, services, verbose)
     ssh_check(ip, ports, services, verbose)
     telnet_check(ip, ports, services, verbose)
@@ -40,6 +48,7 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     pops_check(ip, ports, services, verbose)
     imaps_check(ip, ports, services, verbose)
     ssltls_check(ip, ports, services, verbose)
+    """
 
     undefined(ports, services, verbose)
 
@@ -529,7 +538,7 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# HTTPS - FIX
+# SSL/TLS - FIX
 # --------------------------
 def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
@@ -567,6 +576,111 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
+# BITTORRENT - is it possible?
+# --------------------------
+def bittorrent_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for BITTORRENT")
+
+        # try:
+        # Creating packet for handshake
+        with open("./src/cert/test.txt.torrent", "rb") as file:
+            torrent_data = bencodepy.decode(file.read())
+
+        print(torrent_data)
+        info_dict = torrent_data[b"info"]
+        info_hash = hashlib.sha1(bencodepy.encode(info_dict)).digest()
+        peer_id = "-PC-0001" + "".join(str(i) for i in range(12))
+        announce_url = torrent_data[b"announce"].decode()
+
+        params = {
+            "info_hash": info_hash,
+            "peer_id": peer_id.encode(),
+            "port": port,
+            "uploaded": 0,
+            "downloaded": 0,
+            "left": 0,
+            "compact": 1,
+        }
+
+        response = requests.get(announce_url, params=params)
+        if response.status_code == 200:
+            peers_data = response.content
+
+            if peers_data:
+                # Extract IPs and ports (compact format)
+                for i in range(0, len(peers_data), 6):
+                    # ip = ".".join(
+                    #    str(b) for b in peers_data[i : i + 4]
+                    # )  # Corrected line
+                    # port = int.from_bytes(peers_data[i + 4 : i + 6], "big")
+                    # Creating socket
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(3)
+                    sock.connect((ip, port))
+                    if sock:
+                        protocol = b"BitTorrent protocol"
+                        pstrlen = len(protocol)
+                        reserved = b"\x00" * 8
+                        handshake_message = struct.pack(
+                            f"B{pstrlen}s8s20s20s",
+                            pstrlen,
+                            protocol,
+                            reserved,
+                            info_hash,
+                            peer_id.encode(),
+                        )
+                        sock.send(handshake_message)
+                        res = sock.recv(1024)
+                        if res:
+                            rem_ports.append(port)
+                            services[port] = "BITTORRENT"
+
+                    sock.close()
+
+        # except Exception as e:
+        #    print(port, e)
+        #    pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# GNUTELLA
+# --------------------------
+def gnutella_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for PROTOCOL")
+
+        try:
+            # Nmap sends get request and sees if the result contains gnutella
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(3)
+            sock.connect((ip, port))
+            sock.send(b"GET / HTTP/1.0\n\n")
+            res = sock.recv(128)
+
+            if "gnutella" in str(res):
+                rem_ports.append(port)
+                services[port] = "GNUTELLA"
+
+        except Exception:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
 # UNDEFINED
 # --------------------------
 def undefined(open_ports: list, services: dict, verbose: bool):
@@ -579,6 +693,9 @@ def undefined(open_ports: list, services: dict, verbose: bool):
         services[port] = "undefined"
 
 
+# --------------------------
+# UNDEFINED
+# --------------------------
 def check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
