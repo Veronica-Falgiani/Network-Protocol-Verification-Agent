@@ -25,7 +25,7 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
-    gnutella_check(ip, ports, services, verbose)
+    dhcp_check(ip, ports, services, verbose)
 
     # All protocols
     """
@@ -38,6 +38,7 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     pop_check(ip, ports, services, verbose)
     imap_check(ip, ports, services, verbose)
     smb_check(ip, ports, services, verbose)
+    gnutella_check(ip, ports, services, verbose)
 
     # dhcp_check(ip, ports, services)
     # rdp_check(ip, ports, services)
@@ -662,7 +663,6 @@ def gnutella_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for PROTOCOL")
 
         try:
-            # Nmap sends get request and sees if the result contains gnutella
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(3)
             sock.connect((ip, port))
