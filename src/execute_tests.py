@@ -29,7 +29,6 @@ def print_test(services: dict, ip: str) -> dict:
 
                     # Simple test: checks if the port is open
                     else:
-                        print("|")
                         print(f"|\\_ {name}")
                         print(f"|   severity: {info['severity']}")
                         results[name] = info
@@ -38,7 +37,6 @@ def print_test(services: dict, ip: str) -> dict:
                 results.clear()
 
         except FileNotFoundError:
-            print("|")
             print("|\\_ --- NO TESTS FOUND FOR THIS PROTOCOL ---")
 
     return report
@@ -75,7 +73,6 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
             or not_recv is not None
             and not_recv in res.decode()
         ):
-            print("|")
             print(f"|\\_ {name}")
             print(f"|   severity: {info['severity']}")
             results[name] = info

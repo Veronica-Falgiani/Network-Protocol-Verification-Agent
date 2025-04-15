@@ -22,14 +22,12 @@ def result(found_ports: dict, services: dict, report: dict):
                     results = report[port]
 
                     for name, info in results.items():
-                        res_file.write("|\n")
                         res_file.write(f"|\\_ {name}\n")
                         res_file.write(f"|   description: {info['description']}\n")
                         res_file.write(f"|   severity: {info['severity']}\n")
 
                 # No test found for the protocol
                 else:
-                    res_file.write("|\n")
                     res_file.write("|\\_ --- NO TESTS FOUND FOR THIS PROTOCOL ---\n")
 
     print(f"\nResults can be found in: {file_name}")
