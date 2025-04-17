@@ -1,8 +1,13 @@
 import json
 import os
 import socket
+import ssl
 
 base_dir = os.path.dirname(__file__)
+
+# Defining self signed certificate for tls/ssl
+context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
+context.load_verify_locations("cert/domain.crt")
 
 
 def print_test(services: dict, ip: str) -> dict:
@@ -15,7 +20,6 @@ def print_test(services: dict, ip: str) -> dict:
         # Reads from the test files we provide
         print(f"\n{port} \t {prot}")
         rel_path = "../tests/" + prot.lower() + "_test.json"
-        print(base_dir, rel_path)
         path = os.path.join(base_dir, rel_path)
 
         try:
@@ -25,7 +29,7 @@ def print_test(services: dict, ip: str) -> dict:
 
                 for name, info in tests.items():
                     # Complex ssl/tls test: establishes a connection and then sends a message and compares results
-                    if "SSL" in name or name == "HTTPS":
+                    if "SSL" in prot or prot == "HTTPS":
                         test_ssl(name, info, results, ip, port)
 
                     # Complex test: sends a message and compares the results
@@ -66,47 +70,6 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
 
         # Sends all the commands to the server
         for send in send_list:
-            print(send)
-            sock.send(send.encode())
-            res = sock.recv(1024)
-            print(res.decode())
-
-        # Compares the received message to the one in the json
-        if (
-            recv is not None
-            and recv in res.decode()
-            or not_recv is not None
-            and not_recv in res.decode()
-        ):
-            print(f"|\\_ {name}")
-            print(f"|   severity: {info['severity']}")
-            results[name] = info
-
-        sock.close()
-
-    except TimeoutError:
-        pass
-
-
-def test_ssl(name: str, info: dict, results: dict, ip: str, port: int):
-    recv = None
-    not_recv = None
-
-    send_str = info["send"]
-    send_list = send_str.split("~~")
-
-    if "recv" in info:
-        recv = info["recv"]
-    elif "not_recv" in info:
-        not_recv = info["not_recv"]
-
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(5)
-        sock.connect((ip, port))
-
-        # Sends all the commands to the server
-        for send in send_list:
             # print(send)
             sock.send(send.encode())
             res = sock.recv(1024)
@@ -127,3 +90,51 @@ def test_ssl(name: str, info: dict, results: dict, ip: str, port: int):
 
     except TimeoutError:
         pass
+
+
+def test_ssl(name: str, info: dict, results: dict, ip: str, port: int):
+    print("SSL")
+    recv = None
+    not_recv = None
+
+    send_str = info["send"]
+    send_list = send_str.split("~~")
+
+    if "recv" in info:
+        recv = info["recv"]
+    elif "not_recv" in info:
+        not_recv = info["not_recv"]
+
+    try:
+        sock = socket.create_connection((ip, port), timeout=3)
+        ssock = context.wrap_socket(sock, server_hostname=ip)
+
+        # Sends all the commands to the server
+        for send in send_list:
+            # print(send)
+            ssock.send(send.encode())
+            res = ssock.recv(1024)
+            # print(res.decode())
+
+        # Compares the received message to the one in the json
+        if (
+            recv is not None
+            and recv in res.decode()
+            or not_recv is not None
+            and not_recv in res.decode()
+        ):
+            print(f"|\\_ {name}")
+            print(f"|   severity: {info['severity']}")
+            results[name] = info
+
+        ssock.close()
+
+    except TimeoutError:
+        pass
+
+    except ConnectionResetError:
+        pass
+
+    except ssl.SSLError as e:
+        print(res, e)
+    # if "WRONG_VERSION_NUMBER" in str(e):

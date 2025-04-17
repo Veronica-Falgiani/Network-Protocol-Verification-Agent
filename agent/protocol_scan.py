@@ -3,7 +3,7 @@ from utils.terminal_colors import verbose_print
 from scapy.all import *
 from urllib.parse import urlparse
 from http.client import HTTPConnection, HTTPSConnection, BadStatusLine
-from ftplib import FTP
+from ftplib import FTP, FTP_TLS
 from smtplib import SMTP, SMTP_SSL
 from telnetlib import Telnet
 import ssl
@@ -25,7 +25,10 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
+    ftps_check(ip, ports, services, verbose)
+    smtps_check(ip, ports, services, verbose)
 
+    """
     # All protocols
     ftp_check(ip, ports, services, verbose)
     ssh_check(ip, ports, services, verbose)
@@ -42,11 +45,13 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     # rdp_check(ip, ports, services)
 
     # SSL protocols
+    ftps_check(ip, ports, services, verbose)
     https_check(ip, ports, services, verbose)
     smtps_check(ip, ports, services, verbose)
     pops_check(ip, ports, services, verbose)
     imaps_check(ip, ports, services, verbose)
     ssltls_check(ip, ports, services, verbose)
+    """
 
     undefined(ports, services, verbose)
 
@@ -206,7 +211,7 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SSL/TLS"
+                services[port] = "HTTPS"
 
         except Exception:
             pass
@@ -244,6 +249,50 @@ def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
             s.close()
 
         except Exception as e:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# FTP/SSL
+# --------------------------
+def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for FTP-SSL")
+
+        try:
+            # FTP_SSL not properly working, need to find out why
+            # ftps = FTP_TLS()
+            # ftps.connect(ip, port, timeout=3)
+            # print(port, ftps)
+            # ftps.quit()
+
+            # smtp also responds to this, so we need to verify the banner ?
+            sock = socket.create_connection((ip, port), timeout=3)
+            ssock = context.wrap_socket(sock, server_hostname=ip)
+
+            banner = ssock.recv(2048)
+            banner = banner.decode("utf-8", errors="ignore")
+
+            if "FTP" in banner:
+                rem_ports.append(port)
+                services[port] = "FTP-SSL"
+
+            ssock.close()
+
+        except ssl.SSLError as e:
+            if "WRONG_VERSION_NUMBER" in str(e):
+                rem_ports.append(port)
+                services[port] = "FTP-SSL"
+
+        except Exception as e:
+            print(port, e)
             pass
 
     for port in rem_ports:
@@ -319,20 +368,30 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for SMTP/SSL")
+            verbose_print(f"Scanning {port} for SMTP-SSL")
 
         try:
             smtps = SMTP_SSL(ip, port, timeout=3, context=context)
             smtps.ehlo()
             smtps.quit()
 
-            rem_ports.append(port)
-            services[port] = "SMTP/SSL"
+            # smtp also responds to this, so we need to verify the banner ?
+            sock = socket.create_connection((ip, port), timeout=3)
+            ssock = context.wrap_socket(sock, server_hostname=ip)
+
+            banner = ssock.recv(2048)
+            banner = banner.decode("utf-8", errors="ignore")
+
+            if "SMTP" in banner:
+                rem_ports.append(port)
+                services[port] = "SMTP-SSL"
+
+            ssock.close()
 
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SSL/TLS"
+                services[port] = "SMTP-SSL"
 
         except Exception:
             pass
@@ -350,7 +409,7 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for Telnet")
+            verbose_print(f"Scanning {port} for TELNET")
 
         try:
             telnet = Telnet(ip, port, timeout=3)
@@ -358,7 +417,7 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
             if "login:" in str(res):
                 # print(f"{port} \t Telnet")
                 rem_ports.append(port)
-                services[port] = "telnet"
+                services[port] = "TELNET"
 
             telnet.close()
 
@@ -395,7 +454,7 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# POPS
+# POP/SSL
 # --------------------------
 def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
@@ -403,19 +462,19 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for POP/SSL")
+            verbose_print(f"Scanning {port} for POP-SSL")
 
         try:
             pops = POP3_SSL(ip, port, timeout=3, context=context)
             pops.quit()
 
             rem_ports.append(port)
-            services[port] = "POP/SSL"
+            services[port] = "POP-SSL"
 
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SSL/TLS"
+                services[port] = "POP-SSL"
 
         except Exception:
             pass
@@ -457,18 +516,18 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for IMAP/SSL")
+            verbose_print(f"Scanning {port} for IMAP-SSL")
 
         try:
             IMAP4_SSL(ip, port, timeout=3, ssl_context=context)
 
             rem_ports.append(port)
-            services[port] = "IMAP/SSL"
+            services[port] = "IMAP-SSL"
 
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SSL/TLS"
+                services[port] = "IMAP-SSL"
 
         except Exception:
             pass
@@ -544,7 +603,7 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for SSL/TLS")
+            verbose_print(f"Scanning {port} for SSL-TLS")
 
         try:
             sock = socket.create_connection((ip, port), timeout=3)
@@ -553,7 +612,7 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
             ssock.close()
 
             rem_ports.append(port)
-            services[port] = "SSL/TLS"
+            services[port] = "SSL-TLS"
 
         # except Exception as e:
         # print(port, e)
@@ -567,82 +626,7 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SSL/TLS"
-
-    for port in rem_ports:
-        open_ports.remove(port)
-
-
-# --------------------------
-# BITTORRENT - is it possible?
-# --------------------------
-def bittorrent_check(ip: str, open_ports: list, services: dict, verbose: bool):
-    rem_ports = []
-
-    for port in open_ports:
-        if verbose:
-            print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for BITTORRENT")
-
-        # try:
-        # Creating packet for handshake
-        with open("./src/cert/test.txt.torrent", "rb") as file:
-            torrent_data = bencodepy.decode(file.read())
-
-        print(torrent_data)
-        info_dict = torrent_data[b"info"]
-        info_hash = hashlib.sha1(bencodepy.encode(info_dict)).digest()
-        peer_id = "-PC-0001" + "".join(str(i) for i in range(12))
-        announce_url = torrent_data[b"announce"].decode()
-
-        params = {
-            "info_hash": info_hash,
-            "peer_id": peer_id.encode(),
-            "port": port,
-            "uploaded": 0,
-            "downloaded": 0,
-            "left": 0,
-            "compact": 1,
-        }
-
-        response = requests.get(announce_url, params=params)
-        if response.status_code == 200:
-            peers_data = response.content
-
-            if peers_data:
-                # Extract IPs and ports (compact format)
-                for i in range(0, len(peers_data), 6):
-                    # ip = ".".join(
-                    #    str(b) for b in peers_data[i : i + 4]
-                    # )  # Corrected line
-                    # port = int.from_bytes(peers_data[i + 4 : i + 6], "big")
-                    # Creating socket
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.settimeout(3)
-                    sock.connect((ip, port))
-                    if sock:
-                        protocol = b"BitTorrent protocol"
-                        pstrlen = len(protocol)
-                        reserved = b"\x00" * 8
-                        handshake_message = struct.pack(
-                            f"B{pstrlen}s8s20s20s",
-                            pstrlen,
-                            protocol,
-                            reserved,
-                            info_hash,
-                            peer_id.encode(),
-                        )
-                        sock.send(handshake_message)
-                        res = sock.recv(1024)
-                        if res:
-                            rem_ports.append(port)
-                            services[port] = "BITTORRENT"
-
-                    sock.close()
-
-        # except Exception as e:
-        #    print(port, e)
-        #    pass
+                services[port] = "SSL-TLS"
 
     for port in rem_ports:
         open_ports.remove(port)
