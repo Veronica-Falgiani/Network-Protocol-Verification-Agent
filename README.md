@@ -29,7 +29,7 @@ pip install scapy dnspython python-telnetlib-313-and-up-3.13.1-3
 For tls/ssl protocols to work you need to create a Self-Signed Certificate. 
 To do this, install `OpenSSL`. 
 
-Go into the `cert/` folder and create the private key and Certificate Signing Request:
+Create a `cert/` folder and initialize the private key and Certificate Signing Request:
 ```
 openssl req -newkey rsa:2048 -keyout domain.key -out domain.csr
 ```
