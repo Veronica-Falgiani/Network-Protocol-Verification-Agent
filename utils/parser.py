@@ -6,13 +6,14 @@ import argparse
 def parser():
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="Agente per la verifica di protocolli avanzati",
+        description="Agent for Advanced Network Protocol Verification",
         add_help=False,
-        usage='use "%(prog)s --help" for more information',
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    parser.add_argument("--help", action="help", help="Show this help message and exit")
+    parser.add_argument(
+        "-h", "--help", action="help", help="Show this help message and exit"
+    )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Increasse output verbosity"
     )

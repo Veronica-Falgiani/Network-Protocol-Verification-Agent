@@ -1,5 +1,5 @@
 import socket
-from terminal_colors import verbose_print
+from utils.terminal_colors import verbose_print
 from scapy.all import *
 from urllib.parse import urlparse
 from http.client import HTTPConnection, HTTPSConnection, BadStatusLine
@@ -18,17 +18,15 @@ import requests
 
 # Defining self signed certificate for tls/ssl
 context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
-context.load_verify_locations("src/cert/domain.crt")
+context.load_verify_locations("cert/domain.crt")
 
 
 def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
-    dhcp_check(ip, ports, services, verbose)
 
     # All protocols
-    """
     ftp_check(ip, ports, services, verbose)
     ssh_check(ip, ports, services, verbose)
     telnet_check(ip, ports, services, verbose)
@@ -49,7 +47,6 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     pops_check(ip, ports, services, verbose)
     imaps_check(ip, ports, services, verbose)
     ssltls_check(ip, ports, services, verbose)
-    """
 
     undefined(ports, services, verbose)
 
@@ -60,7 +57,7 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     return services
 
 
-def TCP_scan(ip: str, ports: list, verbose: bool) -> dict:
+def tcp_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     ftp_check(ip, ports, services, verbose)
@@ -93,7 +90,7 @@ def TCP_scan(ip: str, ports: list, verbose: bool) -> dict:
     return services
 
 
-def UDP_scan(ip: str, ports: list, verbose: bool) -> dict:
+def udp_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     http_check(ip, ports, services, verbose)

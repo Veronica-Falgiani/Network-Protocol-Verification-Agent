@@ -1,11 +1,11 @@
 import socket
 import sys
-from terminal_colors import print_fail, print_warning, verbose_print
+from utils.terminal_colors import print_fail, print_warning, verbose_print
 from scapy.all import *
 
 
 # Selecting the right scan based on the user input
-def scan(port_s: str, ip: str, ports: list, verbose: bool):
+def port_scan(port_s: str, ip: str, ports: list, verbose: bool):
     match port_s:
         case "c":
             found_ports, ut = tcp_connect_scan(ip, ports, verbose)

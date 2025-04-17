@@ -1,13 +1,13 @@
 import sys
 import socket
-from terminal_colors import print_fail, print_ok, verbose_print
+from utils.terminal_colors import print_fail, print_ok, verbose_print
 from scapy.all import *
 
 SCAN_PORTS = [21, 22, 80, 443]
 
 
 # Selecting the right scan based on the user input
-def scan(host_s: str, ip: str, verbose: bool):
+def host_scan(host_s: str, ip: str, verbose: bool):
     ip_parse(ip)
 
     if verbose:
