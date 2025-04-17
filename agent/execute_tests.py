@@ -29,11 +29,11 @@ def print_test(services: dict, ip: str) -> dict:
 
                 for name, info in tests.items():
                     # Complex ssl/tls test: establishes a connection and then sends a message and compares results
-                    if "SSL" in prot or prot == "HTTPS":
+                    if "SSL" in prot:
                         test_ssl(name, info, results, ip, port)
 
                     # Complex test: sends a message and compares the results
-                    if "recv" in info:
+                    elif "recv" in info:
                         test(name, info, results, ip, port)
 
                     # Simple test: checks if the port is open
@@ -85,6 +85,10 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
             print(f"|\\_ {name}")
             print(f"|   severity: {info['severity']}")
             results[name] = info
+        else:
+            print(f"|\\_ {name}")
+            print(f"|   severity: {info['severity']}")
+            results[name] = info
 
         sock.close()
 
@@ -93,7 +97,6 @@ def test(name: str, info: dict, results: dict, ip: str, port: int):
 
 
 def test_ssl(name: str, info: dict, results: dict, ip: str, port: int):
-    print("SSL")
     recv = None
     not_recv = None
 
@@ -136,5 +139,5 @@ def test_ssl(name: str, info: dict, results: dict, ip: str, port: int):
         pass
 
     except ssl.SSLError as e:
-        print(res, e)
+        pass
     # if "WRONG_VERSION_NUMBER" in str(e):

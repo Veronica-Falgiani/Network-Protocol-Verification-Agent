@@ -11,10 +11,6 @@ import dns.message, dns.query
 from poplib import POP3, POP3_SSL
 from imaplib import IMAP4, IMAP4_SSL
 from impacket.smbconnection import SMBConnection
-import hashlib
-import struct
-import bencodepy
-import requests
 
 # Defining self signed certificate for tls/ssl
 context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
@@ -25,10 +21,7 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     services = {}
 
     # Write portocols to test here
-    ftps_check(ip, ports, services, verbose)
-    smtps_check(ip, ports, services, verbose)
 
-    """
     # All protocols
     ftp_check(ip, ports, services, verbose)
     ssh_check(ip, ports, services, verbose)
@@ -51,7 +44,6 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     pops_check(ip, ports, services, verbose)
     imaps_check(ip, ports, services, verbose)
     ssltls_check(ip, ports, services, verbose)
-    """
 
     undefined(ports, services, verbose)
 
@@ -118,107 +110,6 @@ def print_protocol(services: dict):
     print("PORT \t SERVICE")
     for key, value in services.items():
         print(f"{key} \t {value}")
-
-
-# --------------------------
-# SSH
-# --------------------------
-def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
-    rem_ports = []
-
-    for port in open_ports:
-        if verbose:
-            print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for SSH")
-
-        s = socket.socket()
-        s.settimeout(3)
-        s.connect((ip, port))
-
-        try:
-            # Checks if the banner of the connection contains SSH
-            banner = s.recv(1024)
-            banner = banner.decode("utf-8", errors="ignore")
-
-            if banner[0:3] == "SSH":
-                rem_ports.append(port)
-                services[port] = "SSH"
-
-            s.close()
-
-        except Exception:
-            pass
-
-    for port in rem_ports:
-        open_ports.remove(port)
-
-
-# --------------------------
-# HTTP
-# --------------------------
-def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
-    rem_ports = []
-
-    for port in open_ports:
-        if verbose:
-            print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for HTTP")
-
-        url = f"http://{ip}:{port}"
-        url = urlparse(url)
-
-        try:
-            # Tries to establish a connection using HTTP
-            conn = HTTPConnection(url.netloc, timeout=3)
-            conn.request("HEAD", url.path)
-            res = conn.getresponse()
-
-            # Verifies that the response is valid
-            if res.status < 400:
-                rem_ports.append(port)
-                services[port] = "HTTP"
-
-        except Exception:
-            pass
-
-    for port in rem_ports:
-        open_ports.remove(port)
-
-
-# --------------------------
-# HTTPS
-# --------------------------
-def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
-    rem_ports = []
-
-    for port in open_ports:
-        if verbose:
-            print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for HTTPS")
-
-        url = f"https://{ip}:{port}"
-        url = urlparse(url)
-
-        try:
-            conn = HTTPSConnection(url.netloc, timeout=3, context=context)
-            conn.request("HEAD", url.path)
-            res = conn.getresponse()
-
-            if res.status < 400:
-                rem_ports.append(port)
-                services[port] = "HTTPS"
-
-        except ssl.SSLError as e:
-            if "WRONG_VERSION_NUMBER" in str(e):
-                rem_ports.append(port)
-                services[port] = "HTTPS"
-
-        except Exception:
-            pass
-
-    for port in rem_ports:
-        open_ports.remove(port)
-
 
 # --------------------------
 # FTP
@@ -292,7 +183,6 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
                 services[port] = "FTP-SSL"
 
         except Exception as e:
-            print(port, e)
             pass
 
     for port in rem_ports:
@@ -300,22 +190,58 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# DNS
+# SSH
 # --------------------------
-def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
+def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for DNS")
+            verbose_print(f"Scanning {port} for SSH")
+
+        s = socket.socket()
+        s.settimeout(3)
+        s.connect((ip, port))
 
         try:
-            query = dns.message.make_query(".", dns.rdatatype.SOA, flags=0)
-            dns.query.udp_with_fallback(query, ip, 3, port)
-            # print(f"{port} \t DNS")
-            rem_ports.append(port)
-            services[port] = "DNS"
+            # Checks if the banner of the connection contains SSH
+            banner = s.recv(1024)
+            banner = banner.decode("utf-8", errors="ignore")
+
+            if banner[0:3] == "SSH":
+                rem_ports.append(port)
+                services[port] = "SSH"
+
+            s.close()
+
+        except Exception:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# TELNET
+# --------------------------
+def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for TELNET")
+
+        try:
+            telnet = Telnet(ip, port, timeout=3)
+            res = telnet.read_until(b"login: ", timeout=3)
+            if "login:" in str(res):
+                # print(f"{port} \t Telnet")
+                rem_ports.append(port)
+                services[port] = "TELNET"
+
+            telnet.close()
 
         except Exception:
             pass
@@ -401,25 +327,89 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# TELNET
+# DNS
 # --------------------------
-def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
+def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
         if verbose:
             print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for TELNET")
+            verbose_print(f"Scanning {port} for DNS")
 
         try:
-            telnet = Telnet(ip, port, timeout=3)
-            res = telnet.read_until(b"login: ", timeout=3)
-            if "login:" in str(res):
-                # print(f"{port} \t Telnet")
-                rem_ports.append(port)
-                services[port] = "TELNET"
+            query = dns.message.make_query(".", dns.rdatatype.SOA, flags=0)
+            dns.query.udp_with_fallback(query, ip, 3, port)
+            # print(f"{port} \t DNS")
+            rem_ports.append(port)
+            services[port] = "DNS"
 
-            telnet.close()
+        except Exception:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# HTTP
+# --------------------------
+def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for HTTP")
+
+        url = f"http://{ip}:{port}"
+        url = urlparse(url)
+
+        try:
+            # Tries to establish a connection using HTTP
+            conn = HTTPConnection(url.netloc, timeout=3)
+            conn.request("HEAD", url.path)
+            res = conn.getresponse()
+
+            # Verifies that the response is valid
+            if res.status < 400:
+                rem_ports.append(port)
+                services[port] = "HTTP"
+
+        except Exception:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
+# HTTPS
+# --------------------------
+def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for HTTPS")
+
+        url = f"https://{ip}:{port}"
+        url = urlparse(url)
+
+        try:
+            conn = HTTPSConnection(url.netloc, timeout=3, context=context)
+            conn.request("HEAD", url.path)
+            res = conn.getresponse()
+
+            if res.status < 400:
+                rem_ports.append(port)
+                services[port] = "HTTPS"
+
+        except ssl.SSLError as e:
+            if "WRONG_VERSION_NUMBER" in str(e):
+                rem_ports.append(port)
+                services[port] = "HTTPS"
 
         except Exception:
             pass
@@ -595,6 +585,35 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
+# GNUTELLA
+# --------------------------
+def gnutella_check(ip: str, open_ports: list, services: dict, verbose: bool):
+    rem_ports = []
+
+    for port in open_ports:
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print(f"Scanning {port} for PROTOCOL")
+
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(3)
+            sock.connect((ip, port))
+            sock.send(b"GET / HTTP/1.0\n\n")
+            res = sock.recv(128)
+
+            if "gnutella" in str(res):
+                rem_ports.append(port)
+                services[port] = "GNUTELLA"
+
+        except Exception:
+            pass
+
+    for port in rem_ports:
+        open_ports.remove(port)
+
+
+# --------------------------
 # SSL/TLS - FIX
 # --------------------------
 def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
@@ -633,35 +652,6 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# GNUTELLA
-# --------------------------
-def gnutella_check(ip: str, open_ports: list, services: dict, verbose: bool):
-    rem_ports = []
-
-    for port in open_ports:
-        if verbose:
-            print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for PROTOCOL")
-
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(3)
-            sock.connect((ip, port))
-            sock.send(b"GET / HTTP/1.0\n\n")
-            res = sock.recv(128)
-
-            if "gnutella" in str(res):
-                rem_ports.append(port)
-                services[port] = "GNUTELLA"
-
-        except Exception:
-            pass
-
-    for port in rem_ports:
-        open_ports.remove(port)
-
-
-# --------------------------
 # UNDEFINED
 # --------------------------
 def undefined(open_ports: list, services: dict, verbose: bool):
@@ -675,7 +665,7 @@ def undefined(open_ports: list, services: dict, verbose: bool):
 
 
 # --------------------------
-# UNDEFINED
+# TEMPLATE
 # --------------------------
 def check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
