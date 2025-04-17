@@ -43,6 +43,8 @@ openssl x509 -signkey domain.key -in domain.csr -req -days 365 -out domain.crt
 
 ## Usage
 
+Te program needs **sudo** privileges to scan and execute the test
+
 ```
 usage: main.py [-h] [-v] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
 
@@ -67,6 +69,12 @@ Tests are written in __json__ format.
 
 ### Modify
 
+Test if the port is open:
+
+Test the response by sending a message:
+
+Test the response by sending more than one messages:
+
 ### Create
 
-
+The template for creating a test file is the following:
