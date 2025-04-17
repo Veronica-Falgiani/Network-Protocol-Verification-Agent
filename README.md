@@ -1,10 +1,10 @@
 # Network-Protocol-Verification-Agent
 
-Project for my thesis: "Design and Development of an Agent for Advanced Network Protocol Verification"
+> Project for my thesis: "Design and Development of an Agent for Advanced Network Protocol Verification"
 
+This project tests for vulnerabilities inside protocols used by a specific host. The provided tests can be expanded and tests for new protocols can be created from scratch.
 
-
-Supported protocols: 
+Currently supported protocols: 
 - ftp
 - ssh
 - telnet
@@ -19,13 +19,15 @@ Supported protocols:
 
 ## Installation
 
+You'll need to install the following python packages:
+```
+pip install scapy dnspython python-telnetlib-313-and-up-3.13.1-3
+```
 
-
-## Self Signed Certification
+### Self Signed Certification
 
 For tls/ssl protocols to work you need to create a Self-Signed Certificate. 
-
-To do this, install OpenSSL. 
+To do this, install `OpenSSL`. 
 
 Go into the `src/cert/` folder and create the private key:
 ```
@@ -37,8 +39,34 @@ Then create the Self-Signed Certificate using:
 openssl x509 -signkey domain.key -in domain.csr -req -days 365 -out domain.crt
 ```
 
-> !!! Do not change the names of the created files, just copy and paste the commands !!!
+**!!! Do not rename the files used in the commands !!!**
 
-## Creating tests
+## Usage
+
+```
+usage: main.py [-h] [-v] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
+
+Agent for Advanced Network Protocol Verification
+
+positional arguments:
+  ports                 Single port [x], all ports [all], multiple ports [x,y,z] or port range [x:y] to scan
+  host                  Host to scan using ipv4 address
+
+options:
+  -h, --help            Show this help message and exit
+  -v, --verbose         Increasse output verbosity
+  -hs, --host_scan HOST_SCAN
+                        Host scan to execute: [p]ing, [s]yn, [a]ck, [u]dp (ping scan will be used by default)
+  -ps, --port_scan PORT_SCAN
+                        Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default, others need sudo permissions)
+```
+
+## Modifying and creating tests
+
+Tests are written in __json__ format.
+
+### Modify
+
+### Create
 
 
