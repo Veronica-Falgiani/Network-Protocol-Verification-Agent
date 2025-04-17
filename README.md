@@ -5,7 +5,7 @@
 This project tests for vulnerabilities inside protocols used by a specific host. The provided tests can be expanded and tests for new protocols can be created from scratch.
 
 Currently supported protocols: 
-- ftp
+- ftp (ftps)
 - ssh
 - telnet
 - smtp
