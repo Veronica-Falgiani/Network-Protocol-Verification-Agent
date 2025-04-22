@@ -1,17 +1,20 @@
 /* test result severity: low, medium, high */
 {
   "protocol": "protocol",
+  "service": "service",
   "author": "John Doe",
   "tests": {
-    "open": {
-      "True": "high"
+    "IS OPEN": {
+      "description": "description"
+      "severity": "high"
     },
-    "checks": {
-      "http-dlelete": {
+    "CHECK": {
+      "http-delete": {
         "description": "asd",
-        "command": "DELETE / HTTP/1",
+        "send": "DELETE / HTTP/1",
+        "recv": "200",
         "severity": "medium"
-      }
+      } 
     }
   }
 }

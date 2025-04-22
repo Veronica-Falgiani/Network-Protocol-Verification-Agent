@@ -21,7 +21,7 @@ Currently supported protocols:
 
 You'll need to install the following python packages:
 ```
-pip install scapy dnspython python-telnetlib-313-and-up-3.13.1-3
+pip install scapy dnspython python-telnetlib-313-and-up-3.13.1-3 matplotlib numpy
 ```
 
 ### Self Signed Certification
