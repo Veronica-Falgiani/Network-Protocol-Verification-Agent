@@ -72,6 +72,8 @@ def port_parse(port_str: str) -> list:
             print_fail("Ports are not valid!")
             sys.exit()
 
+        ports.sort()
+
     # Single port
     elif port_str.isnumeric() and int(port_str) >= 0 and int(port_str) <= 65535:
         ports.append(int(port_str))
