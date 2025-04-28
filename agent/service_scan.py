@@ -2,7 +2,7 @@ import socket
 from utils.terminal_colors import verbose_print
 from scapy.all import *
 from urllib.parse import urlparse
-from http.client import HTTPConnection, HTTPSConnection, BadStatusLine
+from http.client import HTTPConnection, HTTPSConnection
 from ftplib import FTP, FTP_TLS
 from smtplib import SMTP, SMTP_SSL
 from telnetlib import Telnet
@@ -11,6 +11,8 @@ import dns.message, dns.query
 from poplib import POP3, POP3_SSL
 from imaplib import IMAP4, IMAP4_SSL
 from impacket.smbconnection import SMBConnection
+from operator import itemgetter
+
 
 # Defining self signed certificate for tls/ssl
 context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
@@ -18,11 +20,10 @@ context.load_verify_locations("cert/domain.crt")
 
 
 def test_scan(ip: str, ports: list, verbose: bool) -> dict:
-    services = {}
+    services = []
 
     # Write portocols to test here
 
-    # All protocols
     ftp_check(ip, ports, services, verbose)
     ssh_check(ip, ports, services, verbose)
     telnet_check(ip, ports, services, verbose)
@@ -49,13 +50,14 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
 
     print("\033[K", end="\r")
 
-    services = dict(sorted(services.items()))
+    # Sorts list by port
+    services = sorted(services, key=itemgetter("port"))
 
     return services
 
 
 def tcp_scan(ip: str, ports: list, verbose: bool) -> dict:
-    services = {}
+    services = []
 
     ftp_check(ip, ports, services, verbose)
     ssh_check(ip, ports, services, verbose)
@@ -66,11 +68,13 @@ def tcp_scan(ip: str, ports: list, verbose: bool) -> dict:
     pop_check(ip, ports, services, verbose)
     imap_check(ip, ports, services, verbose)
     smb_check(ip, ports, services, verbose)
+    gnutella_check(ip, ports, services, verbose)
 
     # dhcp_check(ip, ports, services)
     # rdp_check(ip, ports, services)
 
     # SSL protocols
+    ftps_check(ip, ports, services, verbose)
     https_check(ip, ports, services, verbose)
     smtps_check(ip, ports, services, verbose)
     pops_check(ip, ports, services, verbose)
@@ -82,13 +86,14 @@ def tcp_scan(ip: str, ports: list, verbose: bool) -> dict:
     # Clearing line for verbose print
     print("\033[K", end="\r")
 
-    services = dict(sorted(services.items()))
+    # Sorts list by port
+    services = sorted(services, key=itemgetter("port"))
 
     return services
 
 
 def udp_scan(ip: str, ports: list, verbose: bool) -> dict:
-    services = {}
+    services = []
 
     http_check(ip, ports, services, verbose)
     https_check(ip, ports, services, verbose)
@@ -100,16 +105,18 @@ def udp_scan(ip: str, ports: list, verbose: bool) -> dict:
     # Clean line for verbose print
     print("\033[K", end="\r")
 
-    services = dict(sorted(services.items()))
+    # Sorts list by port
+    services = sorted(services, key=itemgetter("port"))
 
     return services
 
 
 # Prints the result of the protocol scan
-def print_protocol(services: dict):
-    print("PORT \t SERVICE")
-    for key, value in services.items():
-        print(f"{key} \t {value}")
+def print_protocol(services: list):
+    print("PORT \t PROTOCOL \t SERVICE")
+    for service in services:
+        print(f"{service['port']} \t {service['protocol']} \t {service['service']}")
+
 
 # --------------------------
 # FTP
@@ -118,6 +125,8 @@ def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for FTP")
@@ -135,7 +144,12 @@ def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             if "FTP" in banner:
                 rem_ports.append(port)
-                services[port] = "FTP"
+
+                service["port"] = port
+                service["protocol"] = "FTP"
+                service["service"] = str(banner).strip()
+
+                services.append(service)
 
             s.close()
 
@@ -153,6 +167,8 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for FTP-SSL")
@@ -173,7 +189,12 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             if "FTP" in banner:
                 rem_ports.append(port)
-                services[port] = "FTP-SSL"
+
+                service["port"] = port
+                service["protocol"] = "FTP-SSL"
+                service["service"] = str(banner).strip()
+
+                services.append(service)
 
             ssock.close()
 
@@ -196,6 +217,8 @@ def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for SSH")
@@ -211,7 +234,12 @@ def ssh_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             if banner[0:3] == "SSH":
                 rem_ports.append(port)
-                services[port] = "SSH"
+
+                service["port"] = port
+                service["protocol"] = "SSH"
+                service["service"] = str(banner).strip()
+
+                services.append(service)
 
             s.close()
 
@@ -229,6 +257,8 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for TELNET")
@@ -236,10 +266,15 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
         try:
             telnet = Telnet(ip, port, timeout=3)
             res = telnet.read_until(b"login: ", timeout=3)
+
             if "login:" in str(res):
-                # print(f"{port} \t Telnet")
                 rem_ports.append(port)
-                services[port] = "TELNET"
+
+                service["port"] = port
+                service["protocol"] = "TELNET"
+                service["service"] = None
+
+                services.append(service)
 
             telnet.close()
 
@@ -257,6 +292,8 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for SMTP")
@@ -274,7 +311,12 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             if "SMTP" in banner:
                 rem_ports.append(port)
-                services[port] = "SMTP"
+
+                service["port"] = port
+                service["protocol"] = "SMTP"
+                service["service"] = str(banner).strip()
+
+                services.append(service)
 
             s.close()
 
@@ -292,6 +334,8 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for SMTP-SSL")
@@ -310,7 +354,12 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             if "SMTP" in banner:
                 rem_ports.append(port)
-                services[port] = "SMTP-SSL"
+
+                service["port"] = port
+                service["protocol"] = "SMTP-SSL"
+                service["service"] = str(banner).strip()
+
+                services.append(service)
 
             ssock.close()
 
@@ -333,6 +382,8 @@ def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for DNS")
@@ -340,9 +391,14 @@ def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
         try:
             query = dns.message.make_query(".", dns.rdatatype.SOA, flags=0)
             dns.query.udp_with_fallback(query, ip, 3, port)
-            # print(f"{port} \t DNS")
+
             rem_ports.append(port)
-            services[port] = "DNS"
+
+            service["port"] = port
+            service["protocol"] = "DNS"
+            service["service"] = None
+
+            services.append(service)
 
         except Exception:
             pass
@@ -358,6 +414,8 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for HTTP")
@@ -374,7 +432,12 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
             # Verifies that the response is valid
             if res.status < 400:
                 rem_ports.append(port)
-                services[port] = "HTTP"
+
+                service["port"] = port
+                service["protocol"] = "HTTP"
+                service["service"] = res.headers["server"]
+
+                services.append(service)
 
         except Exception:
             pass
@@ -390,6 +453,8 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for HTTPS")
@@ -404,12 +469,22 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             if res.status < 400:
                 rem_ports.append(port)
-                services[port] = "HTTPS"
+
+                service["port"] = port
+                service["protocol"] = "HTTPS"
+                service["service"] = res.headers["server"]
+
+                services.append(service)
 
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "HTTPS"
+
+                service["port"] = port
+                service["protocol"] = "HTTPS"
+                service["service"] = res.headers["server"]
+
+                services.append(service)
 
         except Exception:
             pass
@@ -425,6 +500,8 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for POP")
@@ -434,7 +511,12 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
             pop.quit()
 
             rem_ports.append(port)
-            services[port] = "POP"
+
+            service["port"] = port
+            service["protocol"] = "POP"
+            service["service"] = None
+
+            services.append(service)
 
         except Exception:
             pass
@@ -450,6 +532,8 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for POP-SSL")
@@ -459,12 +543,22 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
             pops.quit()
 
             rem_ports.append(port)
-            services[port] = "POP-SSL"
+
+            service["port"] = port
+            service["protocol"] = "POP-SSL"
+            service["service"] = None
+
+            services.append(service)
 
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "POP-SSL"
+
+                service["port"] = port
+                service["protocol"] = "POP-SSL"
+                service["service"] = None
+
+                services.append(service)
 
         except Exception:
             pass
@@ -480,6 +574,8 @@ def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for IMAP")
@@ -488,7 +584,12 @@ def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
             IMAP4(ip, port, timeout=3)
 
             rem_ports.append(port)
-            services[port] = "IMAP"
+
+            service["port"] = port
+            service["protocol"] = "IMAP"
+            service["service"] = None
+
+            services.append(service)
 
         except Exception:
             pass
@@ -504,6 +605,8 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for IMAP-SSL")
@@ -512,12 +615,22 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
             IMAP4_SSL(ip, port, timeout=3, ssl_context=context)
 
             rem_ports.append(port)
-            services[port] = "IMAP-SSL"
+
+            service["port"] = port
+            service["protocol"] = "IMAP-SSL"
+            service["service"] = None
+
+            services.append(service)
 
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "IMAP-SSL"
+
+                service["port"] = port
+                service["protocol"] = "IMAP-SSL"
+                service["service"] = None
+
+                services.append(service)
 
         except Exception:
             pass
@@ -564,6 +677,8 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for SMB")
@@ -572,11 +687,14 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
             smb = SMBConnection("WORKGROUP", ip, sess_port=port, timeout=3)
             smb.close()
 
-            # print(f"{port} \t SMB")
             rem_ports.append(port)
-            services[port] = "SMB"
 
-            # smb.login("test", "test")
+            service["port"] = port
+            service["protocol"] = "SMB"
+            service["service"] = None
+
+            services.append(service)
+
         except Exception:
             pass
 
@@ -620,6 +738,8 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for SSL-TLS")
@@ -631,7 +751,12 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
             ssock.close()
 
             rem_ports.append(port)
-            services[port] = "SSL-TLS"
+
+            service["port"] = port
+            service["protocol"] = "SSL-TS"
+            service["service"] = None
+
+            services.append(service)
 
         # except Exception as e:
         # print(port, e)
@@ -645,7 +770,12 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SSL-TLS"
+
+                service["port"] = port
+                service["protocol"] = "SSL-TS"
+                service["service"] = None
+
+                services.append(service)
 
     for port in rem_ports:
         open_ports.remove(port)
@@ -656,12 +786,17 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 # --------------------------
 def undefined(open_ports: list, services: dict, verbose: bool):
     for port in open_ports:
+        service = {}
+
         if verbose:
             print("\033[K", end="\r")
             verbose_print(f"Scanning {port} for Undefined")
 
-        # print(f"{port}\t undefined")
-        services[port] = "undefined"
+        service["port"] = port
+        service["protocol"] = "undefined"
+        service["service"] = "undefined"
+
+        services.append(service)
 
 
 # --------------------------
@@ -669,6 +804,7 @@ def undefined(open_ports: list, services: dict, verbose: bool):
 # --------------------------
 def check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
+    service = {}
 
     for port in open_ports:
         if verbose:

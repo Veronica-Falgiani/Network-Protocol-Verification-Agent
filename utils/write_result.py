@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 
 
-def txt_result(found_ports: dict, services: dict, report: list):
+def txt_result(found_ports: dict, report: list):
     # Creates a directory (if it doesn't exist) and a result file
     file_name = "res/results_" + datetime.today().strftime("%Y-%m-%d_%H:%M:%S") + ".txt"
     os.makedirs(os.path.dirname(file_name), exist_ok=True)
