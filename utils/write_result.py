@@ -1,15 +1,30 @@
 from datetime import datetime
+import matplotlib.pyplot as plt
+from jinja2 import Environment, FileSystemLoader
 import os
 
 
-def txt_result(found_ports: dict, report: list):
-    # Creates a directory (if it doesn't exist) and a result file
-    file_name = "res/results_" + datetime.today().strftime("%Y-%m-%d_%H:%M:%S") + ".txt"
-    os.makedirs(os.path.dirname(file_name), exist_ok=True)
-    os.chmod("res/", 0o777)
+def write_result(report: list, ip: str):
+    time = "Result_" + datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
+    res_dir = "res/" + time + "/"
 
-    with open(file_name, "w") as res_file:
-        res_file.write("##### RESULTS #####\n\n")
+    # Creates directories for result files (if they don't exist)
+    os.makedirs(os.path.dirname("res/"), exist_ok=True)
+    os.makedirs(os.path.dirname(res_dir), exist_ok=True)
+    os.makedirs(os.path.dirname(f"{res_dir}img/"), exist_ok=True)
+    os.chmod("res/", 0o777)
+    os.chmod(f"{res_dir}", 0o777)
+    os.chmod(f"{res_dir}img/", 0o777)
+
+    txt_result(report, res_dir, time, ip)
+    html_result(report, res_dir, time, ip)
+
+
+def txt_result(report: list, res_dir: str, time: str, ip: str):
+    file_txt = res_dir + f"{ip}_results.txt"
+
+    with open(file_txt, "w") as res_file:
+        res_file.write(f"##### RESULTS  FOR {ip}#####\n\n")
         res_file.write("PORT \t PROTOCOL \t SERVICE\n")
         res_file.write("----------------------------\n")
 
@@ -27,4 +42,109 @@ def txt_result(found_ports: dict, report: list):
                     res_file.write(f"|   description: {vuln['description']}\n")
                     res_file.write(f"|   severity: {vuln['severity']}\n")
 
-    print(f"\nResults can be found in: {file_name}")
+    print(f"\nResults can be found in: {file_txt}")
+
+
+def html_result(report: list, res_dir: str, time: str, ip: str):
+    # Creates a directory (if it doesn't exist) and a result file
+    file_html = res_dir + f"{ip}_results.html"
+
+    labels = "high", "medium", "low", "ok"
+    colors = ["#EC6B56", "#FFC154", "#47B39C", "skyblue"]
+
+    html_results = ""
+
+    for result in report:
+        # Checks if the protocol has been tested or not
+        if result.max_vulns != 0:
+            severity_html = {
+                "high": 0,
+                "high_results": "",
+                "medium": 0,
+                "medium_results": "",
+                "low": 0,
+                "low_results": "",
+            }
+
+            html_results += f"""
+                <h3>Port {result.port} - {result.prot} - {result.service}<h3>
+                <img src="img/{result.prot}.png" width="400">
+                <ul>
+            """
+
+            for vuln in result.vulns:
+                match vuln["severity"]:
+                    case "high":
+                        severity_html["high"] += 1
+                        severity_html["high_results"] += f"""
+                            <li> {vuln["name"]} </li> 
+                        """
+
+                    case "medium":
+                        severity_html["medium"] += 1
+                        severity_html["medium_results"] += f"""
+                            <li> {vuln["name"]} </li> 
+                        """
+
+                    case "low":
+                        severity_html["low"] += 1
+                        severity_html["low_results"] += f"""
+                            <li> {vuln["name"]} </li> 
+                        """
+
+            html_results += (
+                f"<li> HIGH: {severity_html['high']} </li><ul>"
+                + severity_html["high_results"]
+                + f"</ul><li> MEDIUM: {severity_html['medium']}</li><ul>"
+                + severity_html["medium_results"]
+                + f"</ul><li> LOW: {severity_html['low']} </li><ul>"
+                + severity_html["low_results"]
+                + "</ul></ul> <hr>"
+            )
+
+            ok = (
+                result.max_vulns
+                - severity_html["high"]
+                - severity_html["medium"]
+                - severity_html["low"]
+            )
+
+            # Creating pie chart for html
+            sizes = [
+                severity_html["high"],
+                severity_html["medium"],
+                severity_html["low"],
+                ok,
+            ]
+            wedges, texts = plt.pie(sizes, labels=labels, startangle=90, colors=colors)
+
+            # Removes labels that correspond to 0
+            for label in texts:
+                label_txt = label.get_text()
+                if label_txt != "ok" and severity_html[label_txt] == 0:
+                    label.set_text("")
+                elif label_txt == "ok" and ok == 0:
+                    label.set_text("")
+
+            plt.savefig(f"{res_dir}/img/{result.prot}.png")
+
+        # No tests for the specified protocol
+        else:
+            html_results += f"""
+                <h3>Port {result.port} - {result.prot} - {result.service}<h3>
+                <p>No tests found for the protocol</p>
+                <hr>
+            """
+
+    # Setup html template via jinja2 and write to file
+    env = Environment(loader=FileSystemLoader("utils"))
+    template = env.get_template("report_template.html")
+
+    html = template.render(
+        page_title_text=f"Result {time}",
+        title_text=f"Report for {ip}",
+        html_results=html_results,
+    )
+
+    with open(file_html, "w") as res_file:
+        res_file.write(html)

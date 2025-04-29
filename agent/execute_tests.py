@@ -12,11 +12,15 @@ context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
 context.load_verify_locations("cert/domain.crt")
 
 
-def execute_tests(services: dict, ip: str, verbose: bool) -> dict:
+def execute_tests(services: list, ip: str, verbose: bool) -> dict:
     report = []
 
-    for port, prot in services.items():
-        # Reads from the test files we provide
+    for service in services:
+        port = service["port"]
+        prot = service["protocol"]
+        service = service["service"]
+
+        # Tests the generic protocol
         rel_path = "../tests/" + prot.lower() + "_test.json"
         path = os.path.join(base_dir, rel_path)
 
@@ -29,28 +33,29 @@ def execute_tests(services: dict, ip: str, verbose: bool) -> dict:
                 i = 1
 
                 # Create class
-                results = Results(port, prot, None, max_tests)
+                results = Results(port, prot, service, max_tests)
 
                 for name, info in tests.items():
                     if verbose:
                         print("\033[K", end="\r")
                         verbose_print(
-                            f"Scanning {port} with {prot} using {name} [{i}/{max_tests}]"
+                            f"Scanning {port} with {prot} - {service} using {name} [{i}/{max_tests}]"
                         )
                         i += 1
 
                     # Complex ssl/tls test: establishes a connection and then sends a message and compares results
                     if "SSL" in prot:
-                        test_ssl(name, info, results, ip, port)
+                        test_ssl(name, info, results, ip, port, service)
 
                     # Complex test: sends a message and compares the results
                     elif "recv" in info:
-                        test(name, info, results, ip, port)
+                        test(name, info, results, ip, port, service)
 
                     # Simple test: checks if the port is open
                     else:
                         vulns = {}
                         vulns["name"] = name
+                        vulns["service"] = service
                         vulns["description"] = info["description"]
                         vulns["severity"] = info["severity"]
                         results.set_vulns(vulns)
@@ -67,7 +72,7 @@ def execute_tests(services: dict, ip: str, verbose: bool) -> dict:
     return report
 
 
-def test(name: str, info: dict, results: Results, ip: str, port: int):
+def test(name: str, info: dict, results: Results, ip: str, port: int, service: str):
     recv = None
     not_recv = None
 
@@ -100,6 +105,7 @@ def test(name: str, info: dict, results: Results, ip: str, port: int):
         ):
             vulns = {}
             vulns["name"] = name
+            vulns["service"] = service
             vulns["description"] = info["description"]
             vulns["severity"] = info["severity"]
             results.set_vulns(vulns)
@@ -110,7 +116,7 @@ def test(name: str, info: dict, results: Results, ip: str, port: int):
         pass
 
 
-def test_ssl(name: str, info: dict, results: Results, ip: str, port: int):
+def test_ssl(name: str, info: dict, results: Results, ip: str, port: int, service: str):
     recv = None
     not_recv = None
 
@@ -142,6 +148,7 @@ def test_ssl(name: str, info: dict, results: Results, ip: str, port: int):
         ):
             vulns = {}
             vulns["name"] = name
+            vulns["service"] = service
             vulns["description"] = info["description"]
             vulns["severity"] = info["severity"]
             results.set_vulns(vulns)

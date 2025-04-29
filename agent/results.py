@@ -9,7 +9,7 @@ class Results:
     def __str__(self):
         string = ""
 
-        string += f"{self.port} \t {self.prot}\n"
+        string += f"{self.port} \t {self.prot}\t {self.service}\n"
 
         if len(self.vulns) == 0:
             string += "|\\_ ---- NO TESTS FOUND FOR THIS PROTOCOL ----\n"
