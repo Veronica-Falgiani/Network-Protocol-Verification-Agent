@@ -7,7 +7,7 @@ from utils.parser import parser
 from utils.terminal_colors import print_fail
 from agent.host_scan import ip_parse, host_scan
 from agent.port_scan import port_parse, port_scan, print_ports, list_open_ports
-from agent.protocol_scan import test_scan, tcp_scan, udp_scan, print_protocol
+from agent.service_scan import test_scan, tcp_scan, udp_scan, print_protocol
 from agent.execute_tests import execute_tests, print_tests
 from utils.write_result import txt_result
 
@@ -48,9 +48,8 @@ if __name__ == "__main__":
 
     # Testing all protocols
     print("\nTesting protocols found: ")
-    report = []
     report = execute_tests(services, ip, verbose)
     print_tests(report)
 
     # Write to file results
-    txt_result(found_ports, services, report)
+    txt_result(found_ports, report)

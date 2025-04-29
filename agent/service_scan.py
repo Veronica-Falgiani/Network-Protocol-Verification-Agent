@@ -272,7 +272,7 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "TELNET"
-                service["service"] = None
+                service["service"] = "undefined"
 
                 services.append(service)
 
@@ -396,7 +396,7 @@ def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             service["port"] = port
             service["protocol"] = "DNS"
-            service["service"] = None
+            service["service"] = "undefined"
 
             services.append(service)
 
@@ -514,7 +514,7 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             service["port"] = port
             service["protocol"] = "POP"
-            service["service"] = None
+            service["service"] = "undefined"
 
             services.append(service)
 
@@ -556,7 +556,7 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "POP-SSL"
-                service["service"] = None
+                service["service"] = "undefined"
 
                 services.append(service)
 
@@ -587,7 +587,7 @@ def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             service["port"] = port
             service["protocol"] = "IMAP"
-            service["service"] = None
+            service["service"] = "undefined"
 
             services.append(service)
 
@@ -618,7 +618,7 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             service["port"] = port
             service["protocol"] = "IMAP-SSL"
-            service["service"] = None
+            service["service"] = "undefined"
 
             services.append(service)
 
@@ -628,7 +628,7 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "IMAP-SSL"
-                service["service"] = None
+                service["service"] = "undefined"
 
                 services.append(service)
 
@@ -687,11 +687,18 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
             smb = SMBConnection("WORKGROUP", ip, sess_port=port, timeout=3)
             smb.close()
 
+            # s = socket.socket()
+            # s.connect((ip, port))
+            # s.send(b"")
+            # banner = s.recv(1024)
+            # banner = banner.decode("utf-8", errors="ignore")
+            # print(banner)
+
             rem_ports.append(port)
 
             service["port"] = port
             service["protocol"] = "SMB"
-            service["service"] = None
+            service["service"] = "undefined"
 
             services.append(service)
 
@@ -754,7 +761,7 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             service["port"] = port
             service["protocol"] = "SSL-TS"
-            service["service"] = None
+            service["service"] = "undefined"
 
             services.append(service)
 
