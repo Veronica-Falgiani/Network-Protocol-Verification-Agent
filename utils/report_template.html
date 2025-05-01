@@ -6,10 +6,17 @@
     </head>
     <body>
         <div class="container">
-            <h1>{{title_text}}</h1>
+            <div class="mx-auto m-5">
+                <h1 class="text-center">{{title_text}}</h1>
+            </div>
             <hr>
-            <div class="row">
-                {{html_results}}
+            <div class="d-flex align-items-start mt-5">
+                <div class="nav flex-column nav-pills me-3">
+                    {{html_pills}}
+                </div>
+                <div class="container-sm tab-content ms-5 p-5 border border-2 rounded-4">
+                    {{html_results}}
+                </div>
             </div>
         </div>
     </body>

@@ -53,6 +53,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
     colors = ["#EC6B56", "#FFC154", "#47B39C", "skyblue"]
 
     html_results = ""
+    html_pills = ""
 
     for result in report:
         # Checks if the protocol has been tested or not
@@ -64,12 +65,18 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                 "medium_results": "",
                 "low": 0,
                 "low_results": "",
+                "ok": 0,
             }
 
             html_results += f"""
-                <h3>Port {result.port} - {result.prot} - {result.service}<h3>
+                <div id={result.prot} class="tab-pane fade">
+                <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
                 <img src="img/{result.prot}.png" width="400">
                 <ul>
+            """
+
+            html_pills += f""" 
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}">{result.prot}</a></li>
             """
 
             for vuln in result.vulns:
@@ -99,10 +106,10 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                 + severity_html["medium_results"]
                 + f"</ul><li> LOW: {severity_html['low']} </li><ul>"
                 + severity_html["low_results"]
-                + "</ul></ul> <hr>"
+                + "</ul></ul></div>"
             )
 
-            ok = (
+            severity_html["ok"] = (
                 result.max_vulns
                 - severity_html["high"]
                 - severity_html["medium"]
@@ -114,26 +121,33 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                 severity_html["high"],
                 severity_html["medium"],
                 severity_html["low"],
-                ok,
+                severity_html["ok"],
             ]
             wedges, texts = plt.pie(sizes, labels=labels, startangle=90, colors=colors)
 
-            # Removes labels that correspond to 0
+            # Updates labels with counters and removes labels that correspond to 0 vulns
             for label in texts:
                 label_txt = label.get_text()
+                label.set_text(f"{label_txt} - {severity_html[label_txt]}")
                 if label_txt != "ok" and severity_html[label_txt] == 0:
                     label.set_text("")
-                elif label_txt == "ok" and ok == 0:
+                elif label_txt == "ok" and severity_html["ok"] == 0:
                     label.set_text("")
 
             plt.savefig(f"{res_dir}/img/{result.prot}.png")
+            plt.clf()
 
         # No tests for the specified protocol
         else:
             html_results += f"""
-                <h3>Port {result.port} - {result.prot} - {result.service}<h3>
+                <div id={result.prot} class="tab-pane fade">
+                <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
                 <p>No tests found for the protocol</p>
-                <hr>
+                </div>
+            """
+
+            html_pills += f""" 
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}">{result.prot}</a></li>
             """
 
     # Setup html template via jinja2 and write to file
@@ -143,6 +157,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
     html = template.render(
         page_title_text=f"Result {time}",
         title_text=f"Report for {ip}",
+        html_pills=html_pills,
         html_results=html_results,
     )
 
