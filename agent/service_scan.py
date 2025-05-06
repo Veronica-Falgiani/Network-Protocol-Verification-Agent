@@ -147,7 +147,7 @@ def ftp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "FTP"
-                service["service"] = str(banner).strip()
+                service["service"] = str(banner).strip()[4:]
 
                 services.append(service)
 
@@ -192,7 +192,7 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "FTP-SSL"
-                service["service"] = str(banner).strip()
+                service["service"] = str(banner).strip()[4:]
 
                 services.append(service)
 
@@ -314,7 +314,7 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "SMTP"
-                service["service"] = str(banner).strip()
+                service["service"] = str(banner).strip()[4:]
 
                 services.append(service)
 
@@ -357,7 +357,7 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "SMTP-SSL"
-                service["service"] = str(banner).strip()
+                service["service"] = str(banner).strip()[4:]
 
                 services.append(service)
 

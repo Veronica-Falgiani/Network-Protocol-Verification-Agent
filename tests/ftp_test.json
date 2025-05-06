@@ -6,7 +6,15 @@
       "description": "Anonymous login is enabled, everyone can access the service",
       "send": "\n~~USER anonymous\n~~PASS\n",
       "recv": "230",
-      "severity": "high"
+      "severity": "high",
+      "CVE": "https://www.cve.org/CVERecord?id=CVE-1999-0497"
+    },
+    "BOUNCE ATTACK": {
+      "descripiton": "",
+      "send": "\n~~USER anonymous\n~~PASS\n~~PORT\n",
+      "not_recv": "500",
+      "severity": "medium",
+      "CVE": "https://www.cve.org/CVERecord?id=CVE-1999-0017"
     }
   }
 } 

@@ -48,7 +48,7 @@ def execute_tests(services: list, ip: str, verbose: bool) -> dict:
                         test_ssl(name, info, results, ip, port, service)
 
                     # Complex test: sends a message and compares the results
-                    elif "recv" in info:
+                    elif "recv" in info or "not_recv" in info:
                         test(name, info, results, ip, port, service)
 
                     # Simple test: checks if the port is open
@@ -101,7 +101,7 @@ def test(name: str, info: dict, results: Results, ip: str, port: int, service: s
             recv is not None
             and recv in res.decode()
             or not_recv is not None
-            and not_recv in res.decode()
+            and not_recv not in res.decode()
         ):
             vulns = {}
             vulns["name"] = name
@@ -144,7 +144,7 @@ def test_ssl(name: str, info: dict, results: Results, ip: str, port: int, servic
             recv is not None
             and recv in res.decode()
             or not_recv is not None
-            and not_recv in res.decode()
+            and not_recv not in res.decode()
         ):
             vulns = {}
             vulns["name"] = name
