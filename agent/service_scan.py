@@ -1,4 +1,5 @@
 import socket
+from time import sleep
 from utils.terminal_colors import verbose_print
 from scapy.all import *
 from urllib.parse import urlparse
@@ -175,17 +176,10 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             # FTP_SSL not properly working, need to find out why
-            # ftps = FTP_TLS()
-            # ftps.connect(ip, port, timeout=3)
-            # print(port, ftps)
-            # ftps.quit()
-
-            # smtp also responds to this, so we need to verify the banner ?
-            sock = socket.create_connection((ip, port), timeout=3)
-            ssock = context.wrap_socket(sock, server_hostname=ip)
-
-            banner = ssock.recv(2048)
-            banner = banner.decode("utf-8", errors="ignore")
+            ftps = FTP_TLS()
+            ftps.connect(ip, port, timeout=3)
+            banner = ftps.getwelcome()
+            ftps.quit()
 
             if "FTP" in banner:
                 rem_ports.append(port)
@@ -196,12 +190,15 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 services.append(service)
 
-            ssock.close()
-
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "FTP-SSL"
+
+                service["port"] = port
+                service["protocol"] = "FTP-SSL"
+                service["service"] = "undefined"
+
+                services.append(service)
 
         except Exception as e:
             pass
@@ -272,7 +269,7 @@ def telnet_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "TELNET"
-                service["service"] = "undefined"
+                service["service"] = "undefined"  # No banner found
 
                 services.append(service)
 
@@ -300,13 +297,17 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             smtp = SMTP(ip, port, timeout=3)
+            print(port, smtp)
             smtp.ehlo()
+            print(smtp.ehlo_resp)
             smtp.quit()
 
             # ftp also responds to this, so we need to verify the banner ?
             s = socket.socket()
             s.connect((ip, port))
+            sleep(1)  # Banner was cut in half so we need ot wait
             banner = s.recv(1024)
+
             banner = banner.decode("utf-8", errors="ignore")
 
             if "SMTP" in banner:
@@ -349,6 +350,7 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
             sock = socket.create_connection((ip, port), timeout=3)
             ssock = context.wrap_socket(sock, server_hostname=ip)
 
+            sleep(1)  # Banner was cut in half so we need ot wait
             banner = ssock.recv(2048)
             banner = banner.decode("utf-8", errors="ignore")
 
@@ -366,7 +368,12 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
         except ssl.SSLError as e:
             if "WRONG_VERSION_NUMBER" in str(e):
                 rem_ports.append(port)
-                services[port] = "SMTP-SSL"
+
+                service["port"] = port
+                service["protocol"] = "SMTP-SSL"
+                service["service"] = "undefined"
+
+                services.append(service)
 
         except Exception:
             pass
@@ -410,8 +417,81 @@ def dns_check(ip: str, open_ports: list, services: dict, verbose: bool):
 # --------------------------
 # HTTP
 # --------------------------
+# Browsers block acessing standard ports, so I made a filter in case it tries to connect
+# https://neo4j.com/developer/kb/list-of-restricted-ports-in-browsers/
+block_ports = [
+    1,
+    7,
+    9,
+    11,
+    13,
+    15,
+    17,
+    19,
+    20,
+    21,
+    22,
+    23,
+    25,
+    37,
+    42,
+    43,
+    53,
+    77,
+    79,
+    87,
+    95,
+    101,
+    102,
+    103,
+    104,
+    109,
+    110,
+    111,
+    113,
+    115,
+    117,
+    119,
+    123,
+    135,
+    139,
+    143,
+    179,
+    389,
+    465,
+    512,
+    513,
+    514,
+    515,
+    526,
+    530,
+    531,
+    532,
+    540,
+    556,
+    563,
+    587,
+    601,
+    636,
+    993,
+    995,
+    2049,
+    3659,
+    4045,
+    6000,
+    6665,
+    6666,
+    6667,
+    6668,
+    6669,
+]
+
+
 def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
+
+    # Removing problematic ports
+    open_ports = [i for i in open_ports if i not in block_ports]
 
     for port in open_ports:
         service = {}
@@ -452,6 +532,9 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
 def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
+    # Removing problematic ports
+    open_ports = [i for i in open_ports if i not in block_ports]
+
     for port in open_ports:
         service = {}
 
@@ -482,7 +565,7 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "HTTPS"
-                service["service"] = res.headers["server"]
+                service["service"] = "undefined"
 
                 services.append(service)
 
@@ -508,13 +591,15 @@ def pop_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             pop = POP3(ip, port, timeout=3)
+            banner = pop.getwelcome()
+            banner = banner.decode("utf-8", errors="ignore")
             pop.quit()
 
             rem_ports.append(port)
 
             service["port"] = port
             service["protocol"] = "POP"
-            service["service"] = "undefined"
+            service["service"] = banner.strip()
 
             services.append(service)
 
@@ -540,13 +625,15 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             pops = POP3_SSL(ip, port, timeout=3, context=context)
+            banner = pops.getwelcome()
+            banner = banner.decode("utf-8", errors="ignore")
             pops.quit()
 
             rem_ports.append(port)
 
             service["port"] = port
             service["protocol"] = "POP-SSL"
-            service["service"] = None
+            service["service"] = banner.strip()
 
             services.append(service)
 
@@ -556,7 +643,7 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "POP-SSL"
-                service["service"] = "undefined"
+                service["service"] = banner.strip()
 
                 services.append(service)
 
@@ -581,13 +668,15 @@ def imap_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for IMAP")
 
         try:
-            IMAP4(ip, port, timeout=3)
+            imap = IMAP4(ip, port, timeout=3)
+            banner = imap.PROTOCOL_VERSION
+            imap.shutdown()
 
             rem_ports.append(port)
 
             service["port"] = port
             service["protocol"] = "IMAP"
-            service["service"] = "undefined"
+            service["service"] = banner
 
             services.append(service)
 
@@ -612,13 +701,15 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
             verbose_print(f"Scanning {port} for IMAP-SSL")
 
         try:
-            IMAP4_SSL(ip, port, timeout=3, ssl_context=context)
+            imap = IMAP4_SSL(ip, port, timeout=3, ssl_context=context)
+            banner = imap.PROTOCOL_VERSION
+            imap.shutdown()
 
             rem_ports.append(port)
 
             service["port"] = port
             service["protocol"] = "IMAP-SSL"
-            service["service"] = "undefined"
+            service["service"] = banner
 
             services.append(service)
 
@@ -628,7 +719,7 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "IMAP-SSL"
-                service["service"] = "undefined"
+                service["service"] = banner
 
                 services.append(service)
 
@@ -760,7 +851,7 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
             rem_ports.append(port)
 
             service["port"] = port
-            service["protocol"] = "SSL-TS"
+            service["protocol"] = "SSL-TLS"
             service["service"] = "undefined"
 
             services.append(service)
@@ -780,7 +871,7 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "SSL-TS"
-                service["service"] = None
+                service["service"] = "undefined"
 
                 services.append(service)
 
