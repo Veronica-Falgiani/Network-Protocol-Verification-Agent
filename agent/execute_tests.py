@@ -66,7 +66,7 @@ def execute_tests(services: list, ip: str, verbose: bool) -> dict:
                 report.append(results)
 
         except FileNotFoundError:
-            results = Results(port, prot, None, 0)
+            results = Results(port, prot, service, 0)
             report.append(results)
 
     return report
@@ -167,7 +167,7 @@ def test_ssl(name: str, info: dict, results: Results, ip: str, port: int, servic
 
 
 def print_tests(report: list):
-    print("PORT \t PROTOCOL")
+    print("PORT \t PROTOCOL \t SERVICE")
 
     for result in report:
         print(result)

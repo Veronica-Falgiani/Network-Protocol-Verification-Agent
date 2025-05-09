@@ -297,9 +297,7 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             smtp = SMTP(ip, port, timeout=3)
-            print(port, smtp)
             smtp.ehlo()
-            print(smtp.ehlo_resp)
             smtp.quit()
 
             # ftp also responds to this, so we need to verify the banner ?
