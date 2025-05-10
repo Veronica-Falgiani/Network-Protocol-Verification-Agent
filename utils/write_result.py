@@ -85,29 +85,29 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                     case "high":
                         severity_html["high"] += 1
                         severity_html["high_results"] += f"""
-                            <li> {vuln["name"]} </li> 
+                            <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
                         """
 
                     case "medium":
                         severity_html["medium"] += 1
                         severity_html["medium_results"] += f"""
-                            <li> {vuln["name"]} </li> 
+                            <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
                         """
 
                     case "low":
                         severity_html["low"] += 1
                         severity_html["low_results"] += f"""
-                            <li> {vuln["name"]} </li> 
+                            <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
                         """
 
             html_results += (
-                f"<li style='color:#EC6B56'><b> HIGH: {severity_html['high']} </b></li><ul class='mb-4'>"
-                + severity_html["high_results"]
-                + f"</ul><li style='color:#FFC154'><b> MEDIUM: {severity_html['medium']}</b></li><ul class='mb-4'>"
-                + severity_html["medium_results"]
-                + f"</ul><li style='color:#47B39C'><b> LOW: {severity_html['low']} </b></li><ul class='mb-4'>"
-                + severity_html["low_results"]
-                + "</ul></ul></div>"
+                f"<li style='color:#EC6B56'><h5><b> HIGH: {severity_html['high']} </b></h5></li>"
+                + f"<ul class='mb-4'> {severity_html['high_results']}</ul>"
+                + f"<li style='color:#FFC154'><h5><b> MEDIUM: {severity_html['medium']} </b></h5></li>"
+                + f"<ul class='mb-4'>{severity_html['medium_results']}</ul>"
+                + f"<li style='color:#47B39C'><h5><b> LOW: {severity_html['low']} </b></h5></li>"
+                + f"<ul class='mb-4'> {severity_html['low_results']}</ul>"
+                + "</ul></div>"
             )
 
             severity_html["ok"] = (

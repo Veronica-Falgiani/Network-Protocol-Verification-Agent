@@ -11,8 +11,11 @@ class Results:
 
         string += f"{self.port} \t {self.prot}\t {self.service}\n"
 
-        if len(self.vulns) == 0:
+        if self.max_vulns == 0:
             string += "|\\_ ---- NO TESTS FOUND FOR THIS PROTOCOL ----\n"
+
+        elif len(self.vulns) == 0:
+            string += "|\\_ ---- THE SERVICE HAS NO VULNERABILITIES ----\n"
 
         for vuln in self.vulns:
             string += f"|\\_ {vuln['name']}\n"

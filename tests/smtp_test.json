@@ -1,0 +1,13 @@
+{
+  "protocol": "smtp",
+  "author": "Veronica Falgiani",
+  "tests": {
+    "OPEN RELAY EXPLOIT": {
+      "description": "The SMTP server is configured to accept and transfer messages on the network that were neither for nor from local users.",
+      "send": "\n~~MAIL FROM:<test@example.com>\n~~RCPT TO:<test2@anotherexample.com>\n",
+      "recv": "250",
+      "severity": "high"
+    }
+  }
+}
+
