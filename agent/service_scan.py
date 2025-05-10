@@ -34,7 +34,6 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     pop_check(ip, ports, services, verbose)
     imap_check(ip, ports, services, verbose)
     smb_check(ip, ports, services, verbose)
-    gnutella_check(ip, ports, services, verbose)
 
     # dhcp_check(ip, ports, services)
     # rdp_check(ip, ports, services)
@@ -69,7 +68,6 @@ def tcp_scan(ip: str, ports: list, verbose: bool) -> dict:
     pop_check(ip, ports, services, verbose)
     imap_check(ip, ports, services, verbose)
     smb_check(ip, ports, services, verbose)
-    gnutella_check(ip, ports, services, verbose)
 
     # dhcp_check(ip, ports, services)
     # rdp_check(ip, ports, services)
@@ -176,10 +174,18 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             # FTP_SSL not properly working, need to find out why
-            ftps = FTP_TLS()
-            ftps.connect(ip, port, timeout=3)
-            banner = ftps.getwelcome()
-            ftps.quit()
+            # ftps = FTP_TLS()
+            # ftps.connect(ip, port, timeout=3)
+            # banner = ftps.getwelcome()
+            # ftps.quit()
+
+            # smtp also responds to this, so we need to verify the banner ?
+            sock = socket.create_connection((ip, port), timeout=3)
+            ssock = context.wrap_socket(sock, server_hostname=ip)
+
+            sleep(1)  # Banner was cut in half so we need ot wait
+            banner = ssock.recv(2048)
+            banner = banner.decode("utf-8", errors="ignore")
 
             if "FTP" in banner:
                 rem_ports.append(port)
@@ -790,35 +796,6 @@ def smb_check(ip: str, open_ports: list, services: dict, verbose: bool):
             service["service"] = "undefined"
 
             services.append(service)
-
-        except Exception:
-            pass
-
-    for port in rem_ports:
-        open_ports.remove(port)
-
-
-# --------------------------
-# GNUTELLA
-# --------------------------
-def gnutella_check(ip: str, open_ports: list, services: dict, verbose: bool):
-    rem_ports = []
-
-    for port in open_ports:
-        if verbose:
-            print("\033[K", end="\r")
-            verbose_print(f"Scanning {port} for PROTOCOL")
-
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(3)
-            sock.connect((ip, port))
-            sock.send(b"GET / HTTP/1.0\n\n")
-            res = sock.recv(128)
-
-            if "gnutella" in str(res):
-                rem_ports.append(port)
-                services[port] = "GNUTELLA"
 
         except Exception:
             pass
