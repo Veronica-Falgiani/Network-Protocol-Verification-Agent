@@ -70,7 +70,8 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
 
             html_results += f"""
                 <div id={result.prot} class="tab-pane fade">
-                <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
+                <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
+                <hr>
                 <img src="img/{result.prot}.png" width="400">
                 <ul>
             """
@@ -100,11 +101,11 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                         """
 
             html_results += (
-                f"<li> HIGH: {severity_html['high']} </li><ul>"
+                f"<li style='color:#EC6B56'><b> HIGH: {severity_html['high']} </b></li><ul class='mb-4'>"
                 + severity_html["high_results"]
-                + f"</ul><li> MEDIUM: {severity_html['medium']}</li><ul>"
+                + f"</ul><li style='color:#FFC154'><b> MEDIUM: {severity_html['medium']}</b></li><ul class='mb-4'>"
                 + severity_html["medium_results"]
-                + f"</ul><li> LOW: {severity_html['low']} </li><ul>"
+                + f"</ul><li style='color:#47B39C'><b> LOW: {severity_html['low']} </b></li><ul class='mb-4'>"
                 + severity_html["low_results"]
                 + "</ul></ul></div>"
             )
@@ -123,7 +124,14 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                 severity_html["low"],
                 severity_html["ok"],
             ]
-            wedges, texts = plt.pie(sizes, labels=labels, startangle=90, colors=colors)
+
+            wedges, texts = plt.pie(
+                sizes,
+                labels=labels,
+                startangle=90,
+                colors=colors,
+                textprops={"color": "w", "size": "x-large"},
+            )
 
             # Updates labels with counters and removes labels that correspond to 0 vulns
             for label in texts:
@@ -134,7 +142,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
                 elif label_txt == "ok" and severity_html["ok"] == 0:
                     label.set_text("")
 
-            plt.savefig(f"{res_dir}/img/{result.prot}.png")
+            plt.savefig(f"{res_dir}/img/{result.prot}.png", transparent=True)
             plt.clf()
 
         # No tests for the specified protocol
@@ -147,7 +155,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
             """
 
             html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}">{result.prot}</a></li>
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></a></li>
             """
 
     # Setup html template via jinja2 and write to file
