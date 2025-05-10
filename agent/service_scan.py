@@ -496,13 +496,17 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
             conn.request("HEAD", url.path)
             res = conn.getresponse()
 
+            banner = res.headers["server"]
+            if banner is None:
+                banner = "undefined"
+
             # Verifies that the response is valid
             if res.status < 400:
                 rem_ports.append(port)
 
                 service["port"] = port
                 service["protocol"] = "HTTP"
-                service["service"] = res.headers["server"]
+                service["service"] = banner
 
                 services.append(service)
 

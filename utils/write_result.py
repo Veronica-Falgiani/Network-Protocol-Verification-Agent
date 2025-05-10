@@ -56,8 +56,21 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
     html_pills = ""
 
     for result in report:
-        # Checks if the protocol has been tested or not
-        if result.max_vulns != 0:
+        # Checks if there are vulns to print
+        if result.max_vulns == 0:
+            html_results += f"""
+                <div id={result.prot} class="tab-pane fade">
+                <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
+                <p class="my-3">No tests found for the protocol</p>
+                </div>
+            """
+
+            html_pills += f""" 
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></button></li>
+            """
+
+        # Checks if the protocol has tests or not
+        elif len(result.vulns) != 0:
             severity_html = {
                 "high": 0,
                 "high_results": "",
@@ -77,7 +90,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
             """
 
             html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}">{result.prot}</a></li>
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
             """
 
             for vuln in result.vulns:
@@ -150,12 +163,12 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
             html_results += f"""
                 <div id={result.prot} class="tab-pane fade">
                 <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
-                <p>No tests found for the protocol</p>
+                <p class="my-3">The service has been tested and no vulns have been found</p>
                 </div>
             """
 
             html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></a></li>
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:green"><b>{result.prot}</b></button></li>
             """
 
     # Setup html template via jinja2 and write to file
