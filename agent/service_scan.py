@@ -47,7 +47,6 @@ def test_scan(ip: str, ports: list, verbose: bool) -> dict:
     ssltls_check(ip, ports, services, verbose)
 
     undefined(ports, services, verbose)
-
     print("\033[K", end="\r")
 
     # Sorts list by port
@@ -182,6 +181,7 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
             # smtp also responds to this, so we need to verify the banner ?
             sock = socket.create_connection((ip, port), timeout=3)
             ssock = context.wrap_socket(sock, server_hostname=ip)
+            ssl_version = ssock.version()
 
             sleep(1)  # Banner was cut in half so we need ot wait
             banner = ssock.recv(2048)
@@ -192,19 +192,11 @@ def ftps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "FTP-SSL"
-                service["service"] = str(banner).strip()[4:]
+                service["service"] = str(banner).strip()[4:] + " - " + ssl_version
 
                 services.append(service)
 
-        except ssl.SSLError as e:
-            if "WRONG_VERSION_NUMBER" in str(e):
-                rem_ports.append(port)
-
-                service["port"] = port
-                service["protocol"] = "FTP-SSL"
-                service["service"] = "undefined"
-
-                services.append(service)
+            ssock.close()
 
         except Exception as e:
             pass
@@ -309,9 +301,9 @@ def smtp_check(ip: str, open_ports: list, services: dict, verbose: bool):
             # ftp also responds to this, so we need to verify the banner ?
             s = socket.socket()
             s.connect((ip, port))
+
             sleep(1)  # Banner was cut in half so we need ot wait
             banner = s.recv(1024)
-
             banner = banner.decode("utf-8", errors="ignore")
 
             if "SMTP" in banner:
@@ -353,6 +345,7 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
             # smtp also responds to this, so we need to verify the banner ?
             sock = socket.create_connection((ip, port), timeout=3)
             ssock = context.wrap_socket(sock, server_hostname=ip)
+            ssl_version = ssock.version()
 
             sleep(1)  # Banner was cut in half so we need ot wait
             banner = ssock.recv(2048)
@@ -363,21 +356,11 @@ def smtps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
                 service["port"] = port
                 service["protocol"] = "SMTP-SSL"
-                service["service"] = str(banner).strip()[4:]
+                service["service"] = str(banner).strip()[4:] + " - " + ssl_version
 
                 services.append(service)
 
             ssock.close()
-
-        except ssl.SSLError as e:
-            if "WRONG_VERSION_NUMBER" in str(e):
-                rem_ports.append(port)
-
-                service["port"] = port
-                service["protocol"] = "SMTP-SSL"
-                service["service"] = "undefined"
-
-                services.append(service)
 
         except Exception:
             pass
@@ -554,22 +537,22 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
             conn.request("HEAD", url.path)
             res = conn.getresponse()
 
+            banner = res.headers["server"]
+            if banner is None:
+                banner = "undefined"
+
+            sock = socket.create_connection((ip, port), timeout=3)
+            ssock = context.wrap_socket(sock, server_hostname=ip)
+            ssl_version = ssock.version()
+
+            ssock.close()
+
             if res.status < 400:
                 rem_ports.append(port)
 
                 service["port"] = port
                 service["protocol"] = "HTTPS"
-                service["service"] = res.headers["server"]
-
-                services.append(service)
-
-        except ssl.SSLError as e:
-            if "WRONG_VERSION_NUMBER" in str(e):
-                rem_ports.append(port)
-
-                service["port"] = port
-                service["protocol"] = "HTTPS"
-                service["service"] = "undefined"
+                service["service"] = banner + " - " + ssl_version
 
                 services.append(service)
 
@@ -629,27 +612,24 @@ def pops_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
         try:
             pops = POP3_SSL(ip, port, timeout=3, context=context)
+            # Socks gets one byte at a time so I had to banner grab this way
             banner = pops.getwelcome()
             banner = banner.decode("utf-8", errors="ignore")
             pops.quit()
 
             rem_ports.append(port)
 
+            sock = socket.create_connection((ip, port), timeout=3)
+            ssock = context.wrap_socket(sock, server_hostname=ip)
+            ssl_version = ssock.version()
+
+            ssock.close()
+
             service["port"] = port
             service["protocol"] = "POP-SSL"
-            service["service"] = banner.strip()
+            service["service"] = banner.strip() + " - " + ssl_version
 
             services.append(service)
-
-        except ssl.SSLError as e:
-            if "WRONG_VERSION_NUMBER" in str(e):
-                rem_ports.append(port)
-
-                service["port"] = port
-                service["protocol"] = "POP-SSL"
-                service["service"] = banner.strip()
-
-                services.append(service)
 
         except Exception:
             pass
@@ -711,21 +691,17 @@ def imaps_check(ip: str, open_ports: list, services: dict, verbose: bool):
 
             rem_ports.append(port)
 
+            sock = socket.create_connection((ip, port), timeout=3)
+            ssock = context.wrap_socket(sock, server_hostname=ip)
+            ssl_version = ssock.version()
+
+            ssock.close()
+
             service["port"] = port
             service["protocol"] = "IMAP-SSL"
-            service["service"] = banner
+            service["service"] = banner + " - " + ssl_version
 
             services.append(service)
-
-        except ssl.SSLError as e:
-            if "WRONG_VERSION_NUMBER" in str(e):
-                rem_ports.append(port)
-
-                service["port"] = port
-                service["protocol"] = "IMAP-SSL"
-                service["service"] = banner
-
-                services.append(service)
 
         except Exception:
             pass
@@ -821,13 +797,15 @@ def ssltls_check(ip: str, open_ports: list, services: dict, verbose: bool):
             sock = socket.create_connection((ip, port), timeout=3)
             ssock = context.wrap_socket(sock, server_hostname=ip)
 
+            version = ssock.version()
+
             ssock.close()
 
             rem_ports.append(port)
 
             service["port"] = port
             service["protocol"] = "SSL-TLS"
-            service["service"] = "undefined"
+            service["service"] = version
 
             services.append(service)
 
