@@ -489,9 +489,9 @@ def http_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     # Removing problematic ports
-    open_ports = [i for i in open_ports if i not in block_ports]
+    remaining_ports = [i for i in open_ports if i not in block_ports]
 
-    for port in open_ports:
+    for port in remaining_ports:
         service = {}
 
         if verbose:
@@ -531,9 +531,9 @@ def https_check(ip: str, open_ports: list, services: dict, verbose: bool):
     rem_ports = []
 
     # Removing problematic ports
-    open_ports = [i for i in open_ports if i not in block_ports]
+    remaining_ports = [i for i in open_ports if i not in block_ports]
 
-    for port in open_ports:
+    for port in remaining_ports:
         service = {}
 
         if verbose:
