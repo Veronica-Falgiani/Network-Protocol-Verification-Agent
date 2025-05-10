@@ -60,7 +60,8 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
         if result.max_vulns == 0:
             html_results += f"""
                 <div id={result.prot} class="tab-pane fade">
-                <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
+                <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
+                <hr>
                 <p class="my-3">No tests found for the protocol</p>
                 </div>
             """
@@ -162,7 +163,8 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
         else:
             html_results += f"""
                 <div id={result.prot} class="tab-pane fade">
-                <h3><u>Port {result.port} - {result.prot} - {result.service}</u></h3>
+                <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
+                <hr>
                 <p class="my-3">The service has been tested and no vulns have been found</p>
                 </div>
             """
