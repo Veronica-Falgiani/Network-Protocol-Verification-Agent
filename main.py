@@ -4,7 +4,7 @@
 import os
 import sys
 from utils.parser import args_parse, ip_parse, port_parse
-from utils.terminal_colors import print_fail
+from utils.terminal_colors import print_ok, print_fail
 from agent.host_scan import host_scan
 from agent.port_scan import port_scan, print_ports, list_open_ports
 from agent.service_scan import test_scan, tcp_scan, udp_scan, print_protocol
@@ -30,7 +30,11 @@ if __name__ == "__main__":
 
     # Host scan
     print("\nVerifying that the host is up: ")
-    host_scan(host_s, ip, verbose)
+    if host_scan(host_s, ip, verbose):
+        print_ok("Host is up")
+    else:
+        print_fail("Host is down")
+        sys.exit()
 
     # Port scan
     print("\nStarting port scan: ")

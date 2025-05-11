@@ -30,11 +30,7 @@ def host_scan(host_s: str, ip: str, verbose: bool):
     # Clean line
     print("\033[K", end="\r")
 
-    if res_status:
-        print_ok("Host is up")
-    else:
-        print_fail("Host is down")
-        sys.exit()
+    return res_status
 
 
 # --------------------------
