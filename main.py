@@ -3,10 +3,10 @@
 # Imports
 import os
 import sys
-from utils.parser import parser
+from utils.parser import args_parse, ip_parse, port_parse
 from utils.terminal_colors import print_fail
-from agent.host_scan import ip_parse, host_scan
-from agent.port_scan import port_parse, port_scan, print_ports, list_open_ports
+from agent.host_scan import host_scan
+from agent.port_scan import port_scan, print_ports, list_open_ports
 from agent.service_scan import test_scan, tcp_scan, udp_scan, print_protocol
 from agent.execute_tests import execute_tests, print_tests
 from utils.write_result import write_result
@@ -16,7 +16,7 @@ if __name__ == "__main__":
         print_fail("This program requires sudo privileges")
         sys.exit()
 
-    args = parser()
+    args = args_parse()
 
     host_s = args.host_scan
     port_s = args.port_scan

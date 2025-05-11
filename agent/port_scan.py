@@ -35,57 +35,6 @@ def port_scan(port_s: str, ip: str, ports: list, verbose: bool):
     return found_ports, ut
 
 
-# Parsing ports we need to scan from user input
-def port_parse(port_str: str) -> list:
-    ports = []
-
-    if port_str == "all":
-        ports = list(range(0, 65536))
-
-    # Contiguous port list
-    elif ":" in port_str:
-        p_range = port_str.split(":")
-
-        if (
-            p_range[0].isnumeric()
-            and p_range[1].isnumeric()
-            and int(p_range[0]) <= int(p_range[1])
-            and 0 <= int(p_range[0]) <= 65535
-            and 0 <= int(p_range[1]) <= 65535
-        ):
-            for i in range(int(p_range[0]), int(p_range[1]) + 1):
-                ports.append(i)
-        else:
-            print_fail("Ports are not valid!")
-            sys.exit()
-
-    # Random port list
-    elif "," in port_str:
-        p_list = port_str.split(",")
-        for item in p_list:
-            if item.isnumeric() and int(item) >= 0 and int(item) <= 65535:
-                ports.append(int(item))
-            else:
-                print_warning(f"port {item} not valid! Skipping it")
-
-        if len(ports) == 0:
-            print_fail("Ports are not valid!")
-            sys.exit()
-
-        ports.sort()
-
-    # Single port
-    elif port_str.isnumeric() and int(port_str) >= 0 and int(port_str) <= 65535:
-        ports.append(int(port_str))
-
-    # Generic error
-    else:
-        print_fail("Ports are not valid!")
-        sys.exit()
-
-    return ports
-
-
 #
 def print_ports(ports: dict):
     print("PORT \t STATUS")

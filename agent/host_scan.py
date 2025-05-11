@@ -3,13 +3,12 @@ import socket
 from utils.terminal_colors import print_fail, print_ok, verbose_print
 from scapy.all import *
 
+# Ports used for syn and ack scan
 SCAN_PORTS = [21, 22, 80, 443]
 
 
 # Selecting the right scan based on the user input
 def host_scan(host_s: str, ip: str, verbose: bool):
-    ip_parse(ip)
-
     if verbose:
         verbose_print(f"Verifying {ip}")
 
@@ -35,17 +34,6 @@ def host_scan(host_s: str, ip: str, verbose: bool):
         print_ok("Host is up")
     else:
         print_fail("Host is down")
-        sys.exit()
-
-
-# Parses ip from user input
-def ip_parse(ip: str):
-    if ip == "localhost":
-        ip = "127.0.0.1"
-    try:
-        socket.inet_aton(ip)
-    except socket.error:
-        print_fail("IP not valid!")
         sys.exit()
 
 
