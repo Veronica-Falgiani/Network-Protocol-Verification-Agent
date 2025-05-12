@@ -6,9 +6,9 @@ import sys
 from utils.parser import args_parse, ip_parse, port_parse
 from utils.terminal_colors import print_ok, print_fail
 from agent.host_scan import host_scan
-from agent.port_scan import port_scan, print_ports, list_open_ports
-from agent.service_scan import test_scan, tcp_scan, udp_scan, print_protocol
-from agent.execute_tests import execute_tests, print_tests
+from agent.port_scan import PortScan
+from agent.service_scan import ServiceScan
+from agent.execute_tests import ExecuteTests
 from utils.write_result import write_result
 
 if __name__ == "__main__":
@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     args = args_parse()
 
-    host_s = args.host_scan
-    port_s = args.port_scan
+    host_arg = args.host_scan
+    port_arg = args.port_scan
     ip = args.host
     ports_str = args.ports
     verbose = args.verbose
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # Host scan
     print("\nVerifying that the host is up: ")
-    if host_scan(host_s, ip, verbose):
+    if host_scan(host_arg, ip, verbose):
         print_ok("Host is up")
     else:
         print_fail("Host is down")
@@ -38,22 +38,25 @@ if __name__ == "__main__":
 
     # Port scan
     print("\nStarting port scan: ")
-    found_ports, ut = port_scan(port_s, ip, ports_list, verbose)
-    print_ports(found_ports)
-    open_ports = list_open_ports(found_ports)
+    port_scan = PortScan(ip)
+    port_scan.port_scan(port_arg, ports_list, verbose)
+    port_scan.get_open_ports()
+    print(port_scan)
 
-    # Protocol scan TCP/UDP
-    print("\nVerifying protocols active on ports: ")
-    if ut == "T":
-        services = test_scan(ip, open_ports, verbose)
+    # Protocol - Service scan
+    print("Verifying protocols active on ports: ")
+    service_scan = ServiceScan(ip)
+    if port_scan.type == "TCP":
+        service_scan.test_scan(port_scan.open_ports, verbose)
     else:
-        services = test_scan(ip, open_ports, verbose)
-    print_protocol(services)
+        service_scan.test_scan(port_scan.open_ports, verbose)
+    print(service_scan)
 
     # Testing all protocols
-    print("\nTesting protocols found: ")
-    report = execute_tests(services, ip, verbose)
-    print_tests(report)
+    print("Testing protocols found: ")
+    report = ExecuteTests(ip, service_scan.services)
+    report.execute_tests(verbose)
+    print(report)
 
     # Write to file results
-    write_result(report, ip)
+    write_result(report)

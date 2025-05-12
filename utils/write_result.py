@@ -1,10 +1,11 @@
+import os
 from datetime import datetime
 import matplotlib.pyplot as plt
 from jinja2 import Environment, FileSystemLoader
-import os
+from agent.results import Results
 
 
-def write_result(report: list, ip: str):
+def write_result(report: Results):
     time = "Result_" + datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
     res_dir = "res/" + time + "/"
 
@@ -16,19 +17,19 @@ def write_result(report: list, ip: str):
     os.chmod(f"{res_dir}", 0o777)
     os.chmod(f"{res_dir}img/", 0o777)
 
-    txt_result(report, res_dir, time, ip)
-    html_result(report, res_dir, time, ip)
+    txt_result(report, res_dir, time)
+    html_result(report, res_dir, time)
 
 
-def txt_result(report: list, res_dir: str, time: str, ip: str):
-    file_txt = res_dir + f"{ip}_results.txt"
+def txt_result(report, res_dir: str, time: str):
+    file_txt = res_dir + f"{report.ip}_results.txt"
 
     with open(file_txt, "w") as res_file:
-        res_file.write(f"##### RESULTS  FOR {ip}#####\n\n")
+        res_file.write(f"##### RESULTS  FOR {report.ip}#####\n\n")
         res_file.write("PORT \t PROTOCOL \t SERVICE\n")
         res_file.write("----------------------------\n")
 
-        for result in report:
+        for result in report.report:
             res_file.write(f"\n{result.port} \t {result.prot} \t {result.service}\n")
 
             # No test found for the protocol
@@ -42,12 +43,12 @@ def txt_result(report: list, res_dir: str, time: str, ip: str):
                     res_file.write(f"|   description: {vuln['description']}\n")
                     res_file.write(f"|   severity: {vuln['severity']}\n")
 
-    print(f"\nResults can be found in: {file_txt}")
+    print(f"Results can be found in: {file_txt}")
 
 
-def html_result(report: list, res_dir: str, time: str, ip: str):
+def html_result(report: Results, res_dir: str, time: str):
     # Creates a directory (if it doesn't exist) and a result file
-    file_html = res_dir + f"{ip}_results.html"
+    file_html = res_dir + f"{report.ip}_results.html"
 
     labels = "high", "medium", "low", "ok"
     colors = ["#EC6B56", "#FFC154", "#47B39C", "skyblue"]
@@ -55,7 +56,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
     html_results = ""
     html_pills = ""
 
-    for result in report:
+    for result in report.report:
         # Checks if there are vulns to print
         if result.max_vulns == 0:
             html_results += f"""
@@ -179,7 +180,7 @@ def html_result(report: list, res_dir: str, time: str, ip: str):
 
     html = template.render(
         page_title_text=f"Result {time}",
-        title_text=f"Report for {ip}",
+        title_text=f"Report for {report.ip}",
         html_pills=html_pills,
         html_results=html_results,
     )

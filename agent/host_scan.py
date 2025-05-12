@@ -8,11 +8,11 @@ SCAN_PORTS = [21, 22, 80, 443]
 
 
 # Selecting the right scan based on the user input
-def host_scan(host_s: str, ip: str, verbose: bool):
+def host_scan(host_arg: str, ip: str, verbose: bool):
     if verbose:
         verbose_print(f"Verifying {ip}")
 
-    match host_s:
+    match host_arg:
         case "p":
             res_status = ping_scan(ip)
         case "s":
