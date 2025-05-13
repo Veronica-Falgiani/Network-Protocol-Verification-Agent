@@ -8,13 +8,12 @@ Currently supported protocols:
 - ftp (ftps)
 - ssh
 - telnet
-- smtp
+- smtp (smtps)
 - dns
 - http (https)
 - pop (pops)
 - imap (imaps)
 - smb
-- gnutella
 - ssl/tls
 
 ## Installation
