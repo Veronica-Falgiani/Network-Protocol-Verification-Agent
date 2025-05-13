@@ -13,11 +13,14 @@ from poplib import POP3, POP3_SSL
 from imaplib import IMAP4, IMAP4_SSL
 from impacket.smbconnection import SMBConnection
 from operator import itemgetter
+from enum import *
 
 
 class ServiceScan:
     # Defining self signed certificate for tls/ssl
     context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
+    context.options &= ~ssl.OP_NO_SSLv3
+    context.minimum_version = 768
     context.load_verify_locations("cert/domain.crt")
 
     def __init__(self, ip: str):
@@ -179,6 +182,9 @@ class ServiceScan:
                     self.services.append(service)
 
                 ssock.close()
+
+            except ssl.SSLCertVerificationError as e:
+                print(port, e)
 
             except Exception as e:
                 pass
@@ -607,7 +613,7 @@ class ServiceScan:
                 rem_ports.append(port)
 
                 sock = socket.create_connection((ip, port), timeout=3)
-                ssock = ServiceSCan.context.wrap_socket(sock, server_hostname=ip)
+                ssock = ServiceScan.context.wrap_socket(sock, server_hostname=ip)
                 ssl_version = ssock.version()
 
                 ssock.close()
