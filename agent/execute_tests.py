@@ -9,6 +9,8 @@ from agent.results import Results
 class ExecuteTests:
     # Defining self signed certificate for tls/ssl
     context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
+    context.options &= ~ssl.OP_NO_SSLv3
+    context.minimum_version = 768
     context.load_verify_locations("cert/domain.crt")
 
     def __init__(self, ip, services):
@@ -39,6 +41,7 @@ class ExecuteTests:
                 with open(path) as file:
                     test_file = json.load(file)
                     tests = test_file["tests"]
+                    banners = test_file["banners"]
 
                     max_tests = len(tests)
                     i = 1
@@ -46,6 +49,10 @@ class ExecuteTests:
                     # Create class
                     results = Results(port, prot, service, max_tests)
 
+                    # Check if the service is vulnerable by checking the banner
+                    self.check_banner(service, banners, results)
+
+                    # Start testing the service
                     for name, info in tests.items():
                         if verbose:
                             print("\033[K", end="\r")
@@ -69,6 +76,7 @@ class ExecuteTests:
                             vulns["service"] = service
                             vulns["description"] = info["description"]
                             vulns["severity"] = info["severity"]
+                            vulns["cve"] = info["cve"]
                             results.set_vulns(vulns)
 
                         # Clean line
@@ -117,6 +125,7 @@ class ExecuteTests:
                 vulns["service"] = service
                 vulns["description"] = info["description"]
                 vulns["severity"] = info["severity"]
+                vulns["cve"] = info["cve"]
                 results.set_vulns(vulns)
 
             sock.close()
@@ -170,3 +179,11 @@ class ExecuteTests:
 
         except ConnectionResetError:
             pass
+
+    def check_banner(self, service: str, banners: dict, results: Results):
+        for name, versions in banners.items():
+            for version in versions:
+                if name in service and version in service:
+                    results.unsafe_ver = True
+
+        print(results.unsafe_ver)

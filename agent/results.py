@@ -5,6 +5,7 @@ class Results:
         self.service = service
         self.max_vulns = max_vulns
         self.vulns = []
+        self.unsafe_ver = False
 
     def __str__(self):
         string = f"{str(self.port):<10s} {self.prot:<15s} {self.service:<100s}\n"

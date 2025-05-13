@@ -5,16 +5,20 @@
   "author": "John Doe",
   "tests": {
     "IS OPEN": {
-      "description": "description"
+      "description": "description",
       "severity": "high"
     },
-    "CHECK": {
-      "http-delete": {
-        "description": "asd",
-        "send": "DELETE / HTTP/1",
-        "recv": "200",
-        "severity": "medium"
-      } 
+    "HTTP-DELETE": {
+      "description": "asd",
+      "send": "DELETE / HTTP/1",
+      "recv": "200",
+      "severity": "medium"
     }
+  },
+  "banners": {
+    "proFTPD": [
+      "1.2.1",
+      "1.3.1"
+    ]
   }
 }
