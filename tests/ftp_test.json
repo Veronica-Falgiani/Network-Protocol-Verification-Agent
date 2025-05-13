@@ -6,24 +6,22 @@
       "description": "Anonymous login is enabled, everyone can access the service",
       "send": "\n~~USER anonymous\n~~PASS\n",
       "recv": "230",
-      "severity": "high",
-      "cve": "https://www.cve.org/CVERecord?id=CVE-1999-0497"
+      "severity": "high"
     },
     "BOUNCE ATTACK": {
       "descripiton": "",
       "send": "\n~~USER anonymous\n~~PASS\n~~PORT\n",
       "not_recv": "500",
-      "severity": "medium",
-      "cve": "https://www.cve.org/CVERecord?id=CVE-1999-0017"
+      "severity": "medium"
     }
   },
   "banners": {
-    "vsFTPd": [
-      "2.3.4"
-    ],
-    "proFTPd": [
-      "1.3.4",
-      "3.1.2"
-    ]
+    "vsFTPd": {
+      "2.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
+    },
+    "proFTPd": {
+      "1.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523",
+      "3.1.2": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
+    }
   }
 } 

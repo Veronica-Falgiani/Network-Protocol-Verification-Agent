@@ -30,18 +30,7 @@ def txt_result(report, res_dir: str, time: str):
         res_file.write("----------------------------\n")
 
         for result in report.report:
-            res_file.write(f"\n{result.port} \t {result.prot} \t {result.service}\n")
-
-            # No test found for the protocol
-            if len(result.vulns) == 0:
-                res_file.write("|\\_ --- NO TESTS FOUND FOR THIS PROTOCOL ---\n")
-
-            # writes a line for every test that has found a vulnerability in the protocol
-            else:
-                for vuln in result.vulns:
-                    res_file.write(f"|\\_ {vuln['name']}\n")
-                    res_file.write(f"|   description: {vuln['description']}\n")
-                    res_file.write(f"|   severity: {vuln['severity']}\n")
+            res_file.write(str(result))
 
     print(f"Results can be found in: {file_txt}")
 

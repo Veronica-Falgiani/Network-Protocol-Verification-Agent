@@ -64,6 +64,7 @@ class ExecuteTests:
                         # Complex ssl/tls test: establishes a connection and then sends a message and compares results
                         if "SSL" in prot:
                             self.test_ssl(name, info, results, self.ip, port, service)
+                            self.check_ssltls(service, results)
 
                         # Complex test: sends a message and compares the results
                         elif "recv" in info or "not_recv" in info:
@@ -76,7 +77,6 @@ class ExecuteTests:
                             vulns["service"] = service
                             vulns["description"] = info["description"]
                             vulns["severity"] = info["severity"]
-                            vulns["cve"] = info["cve"]
                             results.set_vulns(vulns)
 
                         # Clean line
@@ -125,7 +125,6 @@ class ExecuteTests:
                 vulns["service"] = service
                 vulns["description"] = info["description"]
                 vulns["severity"] = info["severity"]
-                vulns["cve"] = info["cve"]
                 results.set_vulns(vulns)
 
             sock.close()
@@ -182,8 +181,11 @@ class ExecuteTests:
 
     def check_banner(self, service: str, banners: dict, results: Results):
         for name, versions in banners.items():
-            for version in versions:
+            for version, cve in versions.items():
                 if name in service and version in service:
                     results.unsafe_ver = True
+                    results.unsafe_ver_cve = cve
 
-        print(results.unsafe_ver)
+    def check_tls(self, service: str, results: Results):
+        if "TLSv1.3" not in service and "TLSv1.2" not in service:
+            results.unsafe_tls = True
