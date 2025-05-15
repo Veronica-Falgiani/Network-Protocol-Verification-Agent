@@ -19,14 +19,14 @@ def write_result(report: Results):
     os.chmod(f"{RES_DIR}img/", 0o777)
 
     txt_result(report)
-    # html_result(report)
+    html_result(report)
 
 
 def txt_result(report):
     file_txt = RES_DIR + f"{report.ip}_results.txt"
 
     with open(file_txt, "w") as res_file:
-        res_file.write(f"##### RESULTS  FOR {report.ip}#####\n\n")
+        res_file.write(f"##### RESULTS  FOR {report.ip} #####\n\n")
         res_file.write("PORT \t PROTOCOL \t SERVICE\n")
         res_file.write("----------------------------\n")
 
@@ -42,43 +42,47 @@ def html_result(report: Results):
 
     html_title = ""
     html_version = ""
-    html_tests = ""
     html_tls = ""
+    html_misconfigs = ""
+    html_auth_misconfigs = ""
     html_pills = ""
 
     for result in report.report:
         html_title = f"""
             <div id={result.prot} class="tab-pane fade">
-            <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
-            <hr>
+                <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
         """
 
         html_version = f"""
             <div class='my-3'>
+                <hr>
+                <h4 style="text-align:center"> SERVICE VERSION </h4>
                 <p>Service vulnerable: {result.unsafe_ver}</p>
+                <p>Reference CVE: <a href="{result.unsafe_ver_cve}" target="_blank">{result.unsafe_ver_cve[-13:]}</a></p>
             </div>
         """
 
         if "SSL" in result.service or "TLS" in result.service:
             html_tls = f"""
                 <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> SSL/TLS PROTOCOL VERSION </h4>
                     <p>SSL/TLS protocol vulnerable: {result.unsafe_tls}</p>
                 </div>
             """
 
-        # Checks if there are vulns to print
-        if result.max_vulns == 0:
-            html_tests += """
-                <p class="my-3">No tests found for the protocol</p>
+        # Checks if there are misconfigs to print
+        if result.max_misconfigs == 0:
+            html_misconfigs += """
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
+                    <p class="my-3">No tests found for the protocol</p>
                 </div>
             """
 
-            html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></button></li>
-            """
-
-        # Checks if the protocol has tests or not
-        elif len(result.vulns) != 0:
+        # Checks if the protocol has misconfigs or not
+        elif len(result.vuln_misconfigs) != 0:
             severity_html = {
                 "high": 0,
                 "high_results": "",
@@ -89,19 +93,15 @@ def html_result(report: Results):
                 "ok": 0,
             }
 
-            html_tests += f"""
-                <div id={result.prot} class="tab-pane fade">
-                <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
-                <hr>
-                <img src="img/{result.prot}.png" width="400">
-                <ul>
+            html_misconfigs += f"""
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
+                    <img src="img/{result.prot}.png" width="400">
+                    <ul>
             """
 
-            html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
-            """
-
-            for vuln in result.vulns:
+            for vuln in result.vuln_misconfigs:
                 match vuln["severity"]:
                     case "high":
                         severity_html["high"] += 1
@@ -121,7 +121,7 @@ def html_result(report: Results):
                             <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
                         """
 
-            html_tests += (
+            html_misconfigs += (
                 f"<li style='color:#EC6B56'><h5><b> HIGH: {severity_html['high']} </b></h5></li>"
                 + f"<ul class='mb-4'> {severity_html['high_results']}</ul>"
                 + f"<li style='color:#FFC154'><h5><b> MEDIUM: {severity_html['medium']} </b></h5></li>"
@@ -131,15 +131,99 @@ def html_result(report: Results):
                 + "</ul></div>"
             )
 
-            draw_graph(severity_html, result)
+            draw_graph(severity_html, result, result.max_misconfigs, "")
 
-        # No tests for the specified protocol
+        # No misconfigs for the specified protocol
         else:
-            html_tests += """
-                <p class="my-3">The service has been tested and no vulns have been found</p>
+            html_misconfigs += """
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
+                    <p class="my-3">The service has been tested and no misconfigurations have been found</p>
                 </div>
             """
 
+        # Checks if there are misconfigs to print
+        if result.max_auth_misconfigs == 0:
+            html_auth_misconfigs += """
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <p class="my-3">No tests found for the protocol</p>
+                </div>
+            """
+
+        # Checks if the protocol has misconfigs or not
+        elif len(result.vuln_auth_misconfigs) != 0:
+            severity_html = {
+                "high": 0,
+                "high_results": "",
+                "medium": 0,
+                "medium_results": "",
+                "low": 0,
+                "low_results": "",
+                "ok": 0,
+            }
+
+            html_auth_misconfigs += f"""
+                <div id={result.prot}>
+                    <hr>
+                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <img src="img/{result.prot}auth.png" width="400">
+                    <ul>
+            """
+
+            for vuln in result.vuln_auth_misconfigs:
+                match vuln["severity"]:
+                    case "high":
+                        severity_html["high"] += 1
+                        severity_html["high_results"] += f"""
+                            <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
+                        """
+
+                    case "medium":
+                        severity_html["medium"] += 1
+                        severity_html["medium_results"] += f"""
+                            <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
+                        """
+
+                    case "low":
+                        severity_html["low"] += 1
+                        severity_html["low_results"] += f"""
+                            <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
+                        """
+
+            html_auth_misconfigs += (
+                f"<li style='color:#EC6B56'><h5><b> HIGH: {severity_html['high']} </b></h5></li>"
+                + f"<ul class='mb-4'> {severity_html['high_results']}</ul>"
+                + f"<li style='color:#FFC154'><h5><b> MEDIUM: {severity_html['medium']} </b></h5></li>"
+                + f"<ul class='mb-4'>{severity_html['medium_results']}</ul>"
+                + f"<li style='color:#47B39C'><h5><b> LOW: {severity_html['low']} </b></h5></li>"
+                + f"<ul class='mb-4'> {severity_html['low_results']}</ul>"
+                + "</ul></div>"
+            )
+
+            draw_graph(severity_html, result, result.max_auth_misconfigs, "auth")
+
+        # No misconfigs for the specified protocol
+        else:
+            html_auth_misconfigs += """
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <p class="my-3">The service has been tested and no misconfigurations have been found</p>
+                </div>
+            """
+        # Adding buttons for protocols
+        if result.max_misconfigs == 0 and result.max_auth_misconfigs == 0:
+            html_pills += f""" 
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></button></li>
+            """
+        elif len(result.vuln_misconfigs) != 0 or len(result.vuln_auth_misconfigs) != 0:
+            html_pills += f""" 
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
+            """
+        else:
             html_pills += f""" 
                 <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:green"><b>{result.prot}</b></button></li>
             """
@@ -155,19 +239,20 @@ def html_result(report: Results):
         html_title=html_title,
         html_version=html_version,
         html_tls=html_tls,
-        html_tests=html_tests,
+        html_misconfigs=html_misconfigs,
+        html_auth_misconfigs=html_auth_misconfigs,
     )
 
     with open(file_html, "w") as res_file:
         res_file.write(html)
 
 
-def draw_graph(severity_html: dict, result: Results):
+def draw_graph(severity_html: dict, result: Results, max_vulns: int, type: str):
     labels = "high", "medium", "low", "ok"
     colors = ["#EC6B56", "#FFC154", "#47B39C", "skyblue"]
 
     severity_html["ok"] = (
-        result.max_vulns
+        max_vulns
         - severity_html["high"]
         - severity_html["medium"]
         - severity_html["low"]
@@ -198,5 +283,5 @@ def draw_graph(severity_html: dict, result: Results):
         elif label_txt == "ok" and severity_html["ok"] == 0:
             label.set_text("")
 
-    plt.savefig(f"{RES_DIR}/img/{result.prot}.png", transparent=True)
+    plt.savefig(f"{RES_DIR}/img/{result.prot}{type}.png", transparent=True)
     plt.clf()

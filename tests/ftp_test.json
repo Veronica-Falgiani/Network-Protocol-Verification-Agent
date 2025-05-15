@@ -1,6 +1,5 @@
 {
   "protocol": "ftp",
-  "author": "Veronica Falgiani",
   "misconfigs": {
     "ANONYMOUS LOGIN ENABLED" :{
       "description": "Anonymous login is enabled, everyone can access the service",

@@ -62,8 +62,6 @@ class ExecuteTests:
                             login = login.replace("_username_", username)
                             login = login.replace("_password_", password)
 
-                        print(login)
-
                     # Create class
                     results = Results(
                         port, prot, service, max_misconfigs, max_auth_misconfigs
@@ -174,10 +172,10 @@ class ExecuteTests:
 
             # Sends all the commands to the server
             for send in send_list:
-                print(send)
+                # print(send)
                 sock.send(send.encode())
                 res = sock.recv(1024)
-                print(res.decode())
+                # print(res.decode())
 
             # Compares the received message to the one in the json
             if (
