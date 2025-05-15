@@ -1,21 +1,24 @@
 {
   "protocol": "ftp",
   "author": "Veronica Falgiani",
-  "tests": {
+  "misconfigs": {
     "ANONYMOUS LOGIN ENABLED" :{
       "description": "Anonymous login is enabled, everyone can access the service",
       "send": "\n~~USER anonymous\n~~PASS\n",
       "recv": "230",
       "severity": "high"
-    },
+    }
+  },
+  "login": "\n~~USER _username_\n~~PASS _password_\n",
+  "auth_misconfigs": {
     "BOUNCE ATTACK": {
-      "descripiton": "",
-      "send": "\n~~USER anonymous\n~~PASS\n~~PORT\n",
+      "description": "",
+      "send": "PORT\n",
       "not_recv": "500",
       "severity": "medium"
     }
   },
-  "banners": {
+  "vuln_services": {
     "vsFTPd": {
       "2.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
     },
@@ -24,4 +27,4 @@
       "3.1.2": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
     }
   }
-} 
+}

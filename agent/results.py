@@ -1,10 +1,12 @@
 class Results:
-    def __init__(self, port, prot, service, max_vulns):
+    def __init__(self, port, prot, service, max_misconfigs, max_auth_misconfigs):
         self.port = port
         self.prot = prot
         self.service = service
-        self.max_vulns = max_vulns
-        self.vulns = []
+        self.max_misconfigs = max_misconfigs
+        self.max_auth_misconfigs = max_auth_misconfigs
+        self.vuln_misconfigs = []
+        self.vuln_auth_misconfigs = []
         self.unsafe_ver = False
         self.unsafe_ver_cve = ""
         self.unsafe_tls = False
@@ -29,16 +31,30 @@ class Results:
                 string += "|\\___ The service uses the current SSL/TLS protocol  \n|\n"
 
         # Print all the information about the tests
-        string += "| --------------- POSITIVE VULNERABILITY TESTS ---------------\n"
-        if len(self.vulns) == 0:
-            string += "|\\___ No tests found\n"
+        string += "| --------------- MISCONFIGURATIONS ---------------\n"
+        if len(self.vuln_misconfigs) == 0:
+            string += "|\\___ No misconfigurations found\n"
         else:
-            for vuln in self.vulns:
+            for vuln in self.vuln_misconfigs:
+                string += f"|\\___ {vuln['name']}\n"
+                string += f"|     description: {vuln['description']}\n"
+                string += f"|     severity: {vuln['severity']}\n"
+
+        string += (
+            "|\n| --------------- AUTHENTICATED MISCONFIGURATIONS ---------------\n"
+        )
+        if len(self.vuln_auth_misconfigs) == 0:
+            string += "|\\___ No authenticated misconfigurations found\n"
+        else:
+            for vuln in self.vuln_auth_misconfigs:
                 string += f"|\\___ {vuln['name']}\n"
                 string += f"|     description: {vuln['description']}\n"
                 string += f"|     severity: {vuln['severity']}\n"
 
         return string
 
-    def set_vulns(self, vulns: dict):
-        self.vulns.append(vulns)
+    def set_misconfigs(self, vulns: dict):
+        self.vuln_misconfigs.append(vulns)
+
+    def set_auth_misconfigs(self, vulns: dict):
+        self.vuln_auth_misconfigs.append(vulns)

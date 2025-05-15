@@ -6,5 +6,8 @@
       "description": "",
       "severity": "high"
     }
+  },
+  "banners": {
+    
   }
 }

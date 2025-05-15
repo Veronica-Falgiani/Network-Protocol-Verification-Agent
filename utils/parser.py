@@ -32,7 +32,7 @@ def args_parse():
     )
     parser.add_argument(
         "ports",
-        help="Single port [x], all ports [all], multiple ports [x,y,z] or port range [x:y] to scan",
+        help="Single port [x], multiple ports [x,y,z],  port range [x:y] to scan or all ports [all]",
     )
     parser.add_argument("host", help="Host to scan using ipv4 address")
 

@@ -54,8 +54,8 @@ if __name__ == "__main__":
 
     # Testing all protocols
     print("Testing protocols found: ")
-    report = ExecuteTests(ip, service_scan.services)
-    report.execute_tests(verbose)
+    report = ExecuteTests(ip)
+    report.execute_tests(service_scan.services, verbose)
     print(report)
 
     # Write to file results
