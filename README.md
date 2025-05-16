@@ -18,14 +18,18 @@ Currently supported protocols:
 
 ## Installation
 
-You'll need to install the following python packages:
+The script has been tested for **python version 3.13**
+
+### Required python packages
+
+You'll need to install the required python packages using the `requirements.txt` file:
 ```
-pip install scapy dnspython python-telnetlib-313-and-up-3.13.1-3 matplotlib numpy
+pip install -r requirements.txt
 ```
 
 ### Self Signed Certification
 
-For tls/ssl protocols to work you need to create a Self-Signed Certificate. 
+For ssl/tls protocols to work you need to create a Self-Signed Certificate. 
 To do this, install `OpenSSL`. 
 
 Create a `cert/` folder and initialize the private key and Certificate Signing Request:
@@ -38,11 +42,13 @@ Then create the Self-Signed Certificate using:
 openssl x509 -signkey domain.key -in domain.csr -req -days 365 -out domain.crt
 ```
 
-**!!! Do not rename the files used in the commands !!!**
+**!!! Do not change the file names in the commands !!!**
 
 ## Usage
 
-Te program needs **sudo** privileges to scan and execute the test
+### Command line
+
+The program needs **sudo** privileges to scan and execute the test
 
 ```
 usage: main.py [-h] [-v] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
@@ -62,18 +68,86 @@ options:
                         Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default, others need sudo permissions)
 ```
 
+### Results
+
+Results can be viewed in the `res/` directory.
+
 ## Modifying and creating tests
 
-Tests are written in __json__ format.
+Tests are written in __json__ format and need to be inserted into the `tests/` folder.
 
-### Modify
+The base template for the script needs to contain the following things in order to work:
+```
+{
+  "misconfigs": {
+  },
+  "login": "",
+  "auth_misconfigs": {
+  },
+  "vuln_services": {
+  }
+}
+```
 
-Test if the port is open:
+To populate the fields you need to write what you want like this:
 
-Test the response by sending a message:
+### misconfigs/auth_misconfigs
 
-Test the response by sending more than one messages:
+You can concatenate one or more tests inside misconfigs and auth_misconfigs.
 
-### Create
+**Check if a vulnerable port is open:**
+```
+"IS OPEN": {
+  "description": "",
+  "severity": ""
+}
+```
 
-The template for creating a test file is the following:
+- description: why is the open port a vulnerability issue
+- severity: "low", "medium", "high"
+
+**Simple test sending and receiving commands:**
+```
+"MISCONFIG NAME": {
+  "description": "",
+  "send": "",
+  "recv/not_recv": "",
+  "severity": ""
+}
+```
+
+- MISCONFIG NAME: how you want to call the misconfiguration
+- description: why is the misconfiguration a vulnerability issue
+- send: the command to send. If you need to send more commands, separate them with `~~` (Ex. `\n~~USER anonymous\n~~PASS\n`)
+- recv or not_recv: specify the packets we receive/not receive to recognise if there is a vulnerability
+- severity: "low", "medium", "high"
+
+### login
+
+The strings used to login into the service
+
+```
+"login": "\n~~USER _username_\n~~PASS _password_\n"
+```
+
+- Separate more commands with the `~~` characters
+- Use `_username_` and `_password_` as placeholders for credentials 
+
+### vuln_services
+
+You need to specify the vulnerable version of the service based on the banners you receive from the server
+Services can be concatenated
+
+Ex.
+```
+"SERVICE NAME": {
+  "version": "https://www.cve.org/CVERecord?id=CVE-****-****",
+  "version": "https://www.cve.org/CVERecord?id=CVE-****-****"
+}
+```
+
+- SERVICE NAME: the name of the service given by the banner
+- version: the version of the service given by the banner (ex. "2.3.4")
+- cve link: the link to the CVE page of the vulnerable service version
+
+**For more examples, check the tests folder**
