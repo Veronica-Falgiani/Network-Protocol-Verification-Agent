@@ -8,7 +8,10 @@
       "severity": "high"
     }
   },
-  "login": "\n~~USER _username_\n~~PASS _password_\n",
+  "login": {
+    "send_str": "\n~~USER _username_\n~~PASS _password_\n",
+    "recv_str": "230 Login successful."
+  }
   "auth_misconfigs": {
     "BOUNCE ATTACK": {
       "description": "",

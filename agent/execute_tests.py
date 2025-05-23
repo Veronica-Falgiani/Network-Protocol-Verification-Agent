@@ -51,17 +51,6 @@ class ExecuteTests:
                     max_auth_misconfigs = len(auth_misconfigs)
                     i_auth = 1
 
-                    # Asks the user for login info and inserts it into login string
-                    if login:
-                        print(f"{prot} - {service} username: ", end="")
-                        username = input()
-                        password = getpass.getpass(f"{prot} - {service} password: ")
-                        if username == "" and password == "":
-                            login = ""
-                        else:
-                            login = login.replace("_username_", username)
-                            login = login.replace("_password_", password)
-
                     # Create class
                     results = Results(
                         port, prot, service, max_misconfigs, max_auth_misconfigs
@@ -103,8 +92,14 @@ class ExecuteTests:
                         # Clean line
                         print("\033[K", end="\r")
 
+                    # Asks the user for login info and inserts the correct login messages in a list
+                    login_list = self.try_login(prot, port, service, login)
+
+                    print(auth_misconfigs)
+
                     # Start testing for misconfigurations
-                    if login:
+                    if login_list:
+                        print("Ciao")
                         for name, info in auth_misconfigs.items():
                             vuln = {}
 
@@ -118,14 +113,14 @@ class ExecuteTests:
                             # Complex ssl/tls test: establishes a connection and then sends a message and compares results
                             if "SSL" in prot:
                                 vuln = self.test_ssl(
-                                    name, info, self.ip, port, service, login
+                                    name, info, self.ip, port, service, login_list
                                 )
                                 self.check_ssltls(service, results)
 
                             # Complex test: sends a message and compares the results
                             elif "recv" in info or "not_recv" in info:
                                 vuln = self.test(
-                                    name, info, self.ip, port, service, login
+                                    name, info, self.ip, port, service, login_list
                                 )
 
                             # Simple test: checks if the port is open
@@ -146,7 +141,9 @@ class ExecuteTests:
 
             self.report.append(results)
 
-    def test(self, name: str, info: dict, ip: str, port: int, service: str, login=""):
+    def test(
+        self, name: str, info: dict, ip: str, port: int, service: str, login_list=[]
+    ):
         recv = None
         not_recv = None
 
@@ -163,12 +160,8 @@ class ExecuteTests:
             sock.settimeout(5)
             sock.connect((ip, port))
 
-            if login:
-                login_str = login.split("~~")
-                for string in login_str:
-                    sock.send(string.encode())
-                    res = sock.recv(1024)
-                    # TODO: VERIFY LOGIN SUCCESSFUL
+            for message in login_list:
+                sock.send(message.encode())
 
             # Sends all the commands to the server
             for send in send_list:
@@ -197,7 +190,7 @@ class ExecuteTests:
             pass
 
     def test_ssl(
-        self, name: str, info: dict, ip: str, port: int, service: str, login=""
+        self, name: str, info: dict, ip: str, port: int, service: str, login_list=[]
     ):
         recv = None
         not_recv = None
@@ -214,12 +207,8 @@ class ExecuteTests:
             sock = socket.create_connection((ip, port), timeout=3)
             ssock = ExecuteTests.context.wrap_socket(sock, server_hostname=ip)
 
-            if login:
-                login_str = login.split("~~")
-                for string in login_str:
-                    sock.send(string.encode())
-                    res = sock.recv(1024)
-                    # TODO: VERIFY LOGIN SUCCESSFUL
+            for message in login_list:
+                sock.send(message.encode())
 
             # Sends all the commands to the server
             for send in send_list:
@@ -260,3 +249,56 @@ class ExecuteTests:
     def check_tls(self, service: str, results: Results):
         if "TLSv1.3" not in service and "TLSv1.2" not in service:
             results.unsafe_tls = True
+
+    def try_login2(self, sock, login):
+        login_str = login["send_str"].split("~~")
+        for string in login_str:
+            sock.send(string.encode())
+            res = sock.recv(1024)
+            if login["recv_str"] not in res.decode():
+                print("Errore login")
+            # TODO: VERIFY LOGIN SUCCESSFUL
+
+    def try_login(self, prot, port, service, login) -> list:
+        # Asks the user max 3 times for the password
+        for i in range(3):
+            # Opens SSL socket
+            if "SSL" in prot:
+                sock = socket.create_connection((self.ip, port), timeout=3)
+                sock = ExecuteTests.context.wrap_socket(sock, server_hostname=self.ip)
+
+            # Opens simple socket
+            else:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(5)
+                sock.connect((self.ip, port))
+
+            # Asks the user for login ingo
+            print(f"{prot} - {service} username: ", end="")
+            username = input()
+            password = getpass.getpass(f"{prot} - {service} password: ")
+            if username == "" and password == "":
+                login_list = []
+                return login_list
+            else:
+                login_str = login["send_str"].replace("_username_", username)
+                login_str = login_str.replace("_password_", password)
+
+            # Sends the login strings to the server
+            login_list = login_str.split("~~")
+            for message in login_list:
+                sock.send(message.encode())
+                res = sock.recv(1024)
+
+            # Checks the response of the server
+            if login["recv_str"] in res.decode():
+                sock.close()
+                return login_list
+            else:
+                sock.close()
+                print(f"Failed login {i + 1}/3")
+
+        sock.close()
+        login_list = []
+        print("Max login failed")
+        return login_list
