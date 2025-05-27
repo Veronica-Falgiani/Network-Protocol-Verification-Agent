@@ -1,7 +1,5 @@
 {
-  "protocol": "http",
-  "author": "Veronica Falgiani",
-  "tests": {
+  "misconfigs": {
     "IS OPEN" : {
       "description": "Using HTTP instead of HTTPS can be dangerous when exchanging sensitive data",
       "severity": "medium"
@@ -31,7 +29,7 @@
       "severity": "high"
     }
   },
-  "banners": {
-    
-  }
+  "login": {},
+  "auth_misconfigs": {},
+  "vuln_services": {}
 }

@@ -11,7 +11,7 @@
   "login": {
     "send_str": "\n~~USER _username_\n~~PASS _password_\n",
     "recv_str": "230 Login successful."
-  }
+  },
   "auth_misconfigs": {
     "BOUNCE ATTACK": {
       "description": "",
@@ -23,10 +23,6 @@
   "vuln_services": {
     "vsFTPd": {
       "2.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
-    },
-    "proFTPd": {
-      "1.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523",
-      "3.1.2": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
     }
   }
 }

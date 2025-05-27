@@ -1,5 +1,4 @@
 {
-  "protocol": "ftp",
   "misconfigs": {
     "ANONYMOUS LOGIN ENABLED" :{
       "description": "Anonymous login is enabled, everyone can access the service",
