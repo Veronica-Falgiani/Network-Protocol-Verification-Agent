@@ -60,88 +60,91 @@ class ExecuteTests:
                     self.check_banner(service, vuln_services, results)
 
                     # Start testing for misconfigurations
-                    for name, info in misconfigs.items():
-                        vuln = {}
-
-                        if verbose:
-                            print("\033[K", end="\r")
-                            verbose_print(
-                                f"Scanning {port} with {prot} - {service} using {name} [{i_mis}/{max_misconfigs}]"
-                            )
-                            i_mis += 1
-
-                        # Complex ssl/tls test: establishes a connection and then sends a message and compares results
-                        if "SSL" in prot:
-                            vuln = self.test_ssl(name, info, self.ip, port, service)
-                            self.check_ssltls(service, results)
-
-                        # Complex test: sends a message and compares the results
-                        elif "recv" in info or "not_recv" in info:
-                            vuln = self.test(name, info, self.ip, port, service)
-
-                        # Simple test: checks if the port is open
-                        else:
-                            vuln["name"] = name
-                            vuln["service"] = service
-                            vuln["description"] = info["description"]
-                            vuln["severity"] = info["severity"]
-
-                        if vuln:
-                            results.set_misconfigs(vuln)
-
-                        # Clean line
-                        print("\033[K", end="\r")
+                    auth = False
+                    self.check_misconfigs(
+                        misconfigs,
+                        verbose,
+                        i_mis,
+                        max_misconfigs,
+                        port,
+                        prot,
+                        service,
+                        results,
+                        auth,
+                    )
 
                     # Asks the user for login info and inserts the correct login messages in a list
                     login_list = self.try_login(prot, port, service, login)
 
                     # Start testing for misconfigurations
                     if login_list:
-                        print("Ciao")
-                        for name, info in auth_misconfigs.items():
-                            vuln = {}
-
-                            if verbose:
-                                print("\033[K", end="\r")
-                                verbose_print(
-                                    f"Scanning {port} with {prot} - {service} using {name} [{i_auth}/{max_auth_misconfigs}]"
-                                )
-                                i_auth += 1
-
-                            # Complex ssl/tls test: establishes a connection and then sends a message and compares results
-                            if "SSL" in prot:
-                                vuln = self.test_ssl(
-                                    name, info, self.ip, port, service, login_list
-                                )
-                                self.check_ssltls(service, results)
-
-                            # Complex test: sends a message and compares the results
-                            elif "recv" in info or "not_recv" in info:
-                                vuln = self.test(
-                                    name, info, self.ip, port, service, login_list
-                                )
-
-                            # Simple test: checks if the port is open
-                            else:
-                                vuln["name"] = name
-                                vuln["service"] = service
-                                vuln["description"] = info["description"]
-                                vuln["severity"] = info["severity"]
-
-                            if vuln:
-                                results.set_auth_misconfigs(vuln)
-
-                            # Clean line
-                            print("\033[K", end="\r")
+                        auth = True
+                        self.check_misconfigs(
+                            auth_misconfigs,
+                            verbose,
+                            i_auth,
+                            max_auth_misconfigs,
+                            port,
+                            prot,
+                            service,
+                            results,
+                            auth,
+                            login_list,
+                        )
 
             except FileNotFoundError:
                 results = Results(port, prot, service, 0, 0)
 
             self.report.append(results)
 
-    def test(
-        self, name: str, info: dict, ip: str, port: int, service: str, login_list=[]
+    def check_misconfigs(
+        self,
+        misconfigs,
+        verbose,
+        i_mis,
+        max_misconfigs,
+        port,
+        prot,
+        service,
+        results,
+        auth,
+        login_list=[],
     ):
+        for name, info in misconfigs.items():
+            vuln = {}
+
+            if verbose:
+                print("\033[K", end="\r")
+                verbose_print(
+                    f"Scanning {port} with {prot} - {service} using {name} [{i_mis}/{max_misconfigs}]"
+                )
+                i_mis += 1
+
+            # Complex ssl/tls test: establishes a connection and then sends a message and compares results
+            if "SSL" in prot:
+                vuln = self.test_ssl(name, info, self.ip, port, service, login_list)
+                self.check_ssltls(service, results)
+
+            # Complex test: sends a message and compares the results
+            elif "recv" in info or "not_recv" in info:
+                vuln = self.test(name, info, self.ip, port, service, login_list)
+
+            # Simple test: checks if the port is open
+            else:
+                vuln["name"] = name
+                vuln["service"] = service
+                vuln["description"] = info["description"]
+                vuln["severity"] = info["severity"]
+
+            if vuln and auth:
+                results.set_auth_misconfigs(vuln)
+            elif vuln and not auth:
+                results.set_misconfigs(vuln)
+
+            # Clean line
+            print("\033[K", end="\r")
+
+    def test(self, name: str, info: dict, ip: str, port: int, service: str, login_list):
         recv = None
         not_recv = None
 
@@ -188,7 +191,7 @@ class ExecuteTests:
             pass
 
     def test_ssl(
-        self, name: str, info: dict, ip: str, port: int, service: str, login_list=[]
+        self, name: str, info: dict, ip: str, port: int, service: str, login_list
     ):
         recv = None
         not_recv = None
