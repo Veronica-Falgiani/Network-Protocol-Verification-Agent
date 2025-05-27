@@ -40,14 +40,16 @@ def html_result(report: Results):
     # Creates a directory (if it doesn't exist) and a result file
     file_html = RES_DIR + f"{report.ip}_results.html"
 
-    html_title = ""
-    html_version = ""
-    html_tls = ""
-    html_misconfigs = ""
-    html_auth_misconfigs = ""
     html_pills = ""
+    html_title = ""
+    html_protocols = ""
 
     for result in report.report:
+        html_version = ""
+        html_tls = ""
+        html_misconfigs = ""
+        html_auth_misconfigs = ""
+
         html_title = f"""
             <div id={result.prot} class="tab-pane fade">
                 <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
@@ -228,6 +230,15 @@ def html_result(report: Results):
                 <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:green"><b>{result.prot}</b></button></li>
             """
 
+        html_protocols += (
+            html_title
+            + html_version
+            + html_tls
+            + html_misconfigs
+            + html_auth_misconfigs
+            + "</div>"
+        )
+
     # Setup html template via jinja2 and write to file
     env = Environment(loader=FileSystemLoader("utils"))
     template = env.get_template("report_template.html")
@@ -236,11 +247,7 @@ def html_result(report: Results):
         page_title_text=f"Result {TIME}",
         title_text=f"Report for {report.ip}",
         html_pills=html_pills,
-        html_title=html_title,
-        html_version=html_version,
-        html_tls=html_tls,
-        html_misconfigs=html_misconfigs,
-        html_auth_misconfigs=html_auth_misconfigs,
+        html_protocols=html_protocols,
     )
 
     with open(file_html, "w") as res_file:
