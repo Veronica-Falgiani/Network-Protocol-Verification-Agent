@@ -703,37 +703,6 @@ class ServiceScan:
             open_ports.remove(port)
 
     # --------------------------
-    # DHCP -TODO
-    # --------------------------
-    def dhcp_check(self, open_ports: list, verbose: bool):
-        rem_ports = []
-        ip = self.ip
-
-        for port in open_ports:
-            if verbose:
-                print("\033[K", end="\r")
-                verbose_print(f"Scanning {port} for DHCP")
-
-            discover_dhcp = (
-                Ether(dst="ff:ff:ff:ff:ff:ff", src=RandMAC(), type=0x0800)
-                / IP(src="0.0.0.0", dst="255.255.255.255")
-                / UDP(dport=port, sport=68)
-                / BOOTP(op=1, chaddr=RandMAC())
-                / DHCP(options=[("message-type", "discover"), ("end")])
-            )
-
-            res = srp1(discover_dhcp, timeout=3, verbose=0)
-            print(res)
-            if res:
-                if "DHCP" in res and res[BOOTP].yiaddr == ip:
-                    print(res[BOOTP].yiaddr, port)
-                else:
-                    print("No DHCP res")
-
-        for port in rem_ports:
-            open_ports.remove(port)
-
-    # --------------------------
     # SMB
     # --------------------------
     def smb_check(self, open_ports: list, verbose: bool):
@@ -773,7 +742,7 @@ class ServiceScan:
             open_ports.remove(port)
 
     # --------------------------
-    # SSL/TLS - FIX
+    # SSL/TLS
     # --------------------------
     def ssltls_check(self, open_ports: list, verbose: bool):
         rem_ports = []

@@ -9,6 +9,6 @@
   },
   "login": {},
   "auth_misconfigs": {},
-  "vuln_services": {}
+  "serv_names": {}
 }
 

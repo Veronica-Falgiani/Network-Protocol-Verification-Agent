@@ -1,0 +1,35 @@
+{
+  "misconfigs": {
+    "IS OPEN" : {
+      "description": "Using HTTP instead of HTTPS can be dangerous when exchanging sensitive data",
+      "severity": "medium"
+    },
+    "PUT METHOD ALLOWED": {
+      "description": "PUT method is enabled",
+      "send": "PUT / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
+      "recv": "200",
+      "severity": "low"
+    },
+    "DELETE METHOD ALLOWED": {
+      "description": "DELETE method is enabled",
+      "send": "DELETE / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
+      "recv": "200",
+      "severity": "low"
+    },
+    "ARBITRATY HOST HEADER ALLOWED": {
+      "description": "We can use arbitrary headers to access the website",
+      "send": "TEST / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
+      "recv": "200",
+      "severity": "low"
+    },
+    "HTTP STRICT TRANSPORT SECURITY HEADER MISSING": {
+      "description": "The HTTP Strict Transport Security (HSTS) feature enables a web server to inform the user’s browser, via a special response header, that it should never establish an unencrypted HTTP connection to the specified domain servers. Instead, it should automatically establish all connection requests to access the site through HTTPS. This also prevents users from overriding certificate errors.",
+      "send": "GET / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
+      "not_recv": "Strict-Transport-Security: max-age= ; includeSubDomains",
+      "severity": "high"
+    }
+  },
+  "login": {},
+  "auth_misconfigs": {},
+  "vuln_serv_version": {}
+}

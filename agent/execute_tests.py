@@ -33,17 +33,17 @@ class ExecuteTests:
             service = service["service"]
 
             # Tests the generic protocol
-            rel_path = "../tests/" + prot.lower() + "_test.json"
             base_dir = os.path.dirname(__file__)
-            path = os.path.join(base_dir, rel_path)
+            rel_path_prot = "../tests/prot/" + prot.lower() + "_test.json"
+            path_prot = os.path.join(base_dir, rel_path_prot)
 
             try:
-                with open(path) as file:
+                with open(path_prot) as file:
                     test_file = json.load(file)
                     misconfigs = test_file["misconfigs"]
                     login = test_file["login"]
                     auth_misconfigs = test_file["auth_misconfigs"]
-                    vuln_services = test_file["vuln_services"]
+                    serv_names = test_file["serv_names"]
 
                     max_misconfigs = len(misconfigs)
                     i_mis = 1
@@ -55,9 +55,6 @@ class ExecuteTests:
                     results = Results(
                         port, prot, service, max_misconfigs, max_auth_misconfigs
                     )
-
-                    # Check if the service is vulnerable by checking the banner
-                    self.check_banner(service, vuln_services, results)
 
                     # Start testing for misconfigurations
                     auth = False
@@ -91,6 +88,77 @@ class ExecuteTests:
                             auth,
                             login_list,
                         )
+
+                    for name in serv_names:
+                        if name in service.lower():
+                            rel_path_serv = "../tests/serv/" + name + "_test.json"
+                            path_prot = os.path.join(base_dir, rel_path_serv)
+
+                            try:
+                                with open(path_prot) as file:
+                                    test_file = json.load(file)
+                                    misconfigs = test_file["misconfigs"]
+                                    login = test_file["login"]
+                                    auth_misconfigs = test_file["auth_misconfigs"]
+                                    vuln_serv_version = test_file["vuln_serv_version"]
+                                    print(vuln_serv_version)
+                                    # Check if the service is vulnerable by checking the banner
+                                    self.check_banner(
+                                        service, vuln_serv_version, results
+                                    )
+
+                                    max_misconfigs = len(misconfigs)
+                                    i_mis = 1
+
+                                    max_auth_misconfigs = len(auth_misconfigs)
+                                    i_auth = 1
+
+                                    # Create class
+                                    results = Results(
+                                        port,
+                                        prot,
+                                        service,
+                                        max_misconfigs,
+                                        max_auth_misconfigs,
+                                    )
+
+                                    # Start testing for misconfigurations
+                                    auth = False
+                                    self.check_misconfigs(
+                                        misconfigs,
+                                        verbose,
+                                        i_mis,
+                                        max_misconfigs,
+                                        port,
+                                        prot,
+                                        service,
+                                        results,
+                                        auth,
+                                    )
+
+                                    # Asks the user for login info and inserts the correct login messages in a list
+                                    login_list = self.try_login(
+                                        prot, port, service, login
+                                    )
+
+                                    # Start testing for misconfigurations
+                                    if login_list:
+                                        auth = True
+                                        self.check_misconfigs(
+                                            auth_misconfigs,
+                                            verbose,
+                                            i_auth,
+                                            max_auth_misconfigs,
+                                            port,
+                                            prot,
+                                            service,
+                                            results,
+                                            auth,
+                                            login_list,
+                                        )
+
+                            except FileNotFoundError:
+                                results = Results(port, prot, service, 0, 0)
 
             except FileNotFoundError:
                 results = Results(port, prot, service, 0, 0)
@@ -240,12 +308,11 @@ class ExecuteTests:
         except ConnectionResetError:
             pass
 
-    def check_banner(self, service: str, vuln_services: dict, results: Results):
-        for name, versions in vuln_services.items():
-            for version, cve in versions.items():
-                if name in service and version in service:
-                    results.unsafe_ver = True
-                    results.unsafe_ver_cve = cve
+    def check_banner(self, service: str, vuln_serv_version: dict, results: Results):
+        for version, cve in vuln_serv_version.items():
+            if version in service:
+                results.unsafe_ver = True
+                results.unsafe_ver_cve = cve
 
     def check_tls(self, service: str, results: Results):
         if "TLSv1.3" not in service and "TLSv1.2" not in service:

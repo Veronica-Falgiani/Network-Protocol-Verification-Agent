@@ -1,3 +1,4 @@
+/* test result severity: low, medium, high */
 {
   "misconfigs": {
     "ANONYMOUS LOGIN ENABLED" :{
@@ -19,13 +20,9 @@
       "severity": "medium"
     }
   },
-  "vuln_services": {
+  "serv_names": {
     "vsFTPd": {
       "2.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
-    },
-    "proFTPd": {
-      "1.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523",
-      "3.1.2": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
     }
   }
 }
