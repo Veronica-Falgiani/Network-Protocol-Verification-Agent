@@ -12,6 +12,7 @@ import dns.message, dns.query
 from poplib import POP3, POP3_SSL
 from imaplib import IMAP4, IMAP4_SSL
 from impacket.smbconnection import SMBConnection
+import paho.mqtt.client as mqtt_client
 from operator import itemgetter
 from enum import *
 
@@ -37,23 +38,10 @@ class ServiceScan:
 
     def test_scan(self, open_ports: list, verbose: bool):
         # Write portocols to test here
-        self.ftp_check(open_ports, verbose)
-        self.ssh_check(open_ports, verbose)
-        self.telnet_check(open_ports, verbose)
-        self.smtp_check(open_ports, verbose)
-        self.dns_check(open_ports, verbose)
-        self.http_check(open_ports, verbose)
-        self.pop_check(open_ports, verbose)
-        self.imap_check(open_ports, verbose)
-        self.smb_check(open_ports, verbose)
+        self.mqtt_check(open_ports, verbose)
 
         # SSL protocols
-        self.ftps_check(open_ports, verbose)
-        self.https_check(open_ports, verbose)
-        self.smtps_check(open_ports, verbose)
-        self.pops_check(open_ports, verbose)
-        self.imaps_check(open_ports, verbose)
-        self.ssltls_check(open_ports, verbose)
+        #        self.mqtts_check(open_ports, verbose)
 
         self.undefined(open_ports, verbose)
         print("\033[K", end="\r")
@@ -71,6 +59,7 @@ class ServiceScan:
         self.pop_check(open_ports, verbose)
         self.imap_check(open_ports, verbose)
         self.smb_check(open_ports, verbose)
+        self.mqtt_check(open_ports, verbose)
 
         # SSL protocols
         self.ftps_check(open_ports, verbose)
@@ -784,21 +773,120 @@ class ServiceScan:
             open_ports.remove(port)
 
     # --------------------------
-    # UNDEFINED
+    # MQTT
     # --------------------------
-    def undefined(self, open_ports: list, verbose: bool):
+    # TODO: Add SSL testing
+    def mqtt_check(self, open_ports: list, verbose: bool):
+        rem_ports = []
+        # ip = self.ip
+        ip = "test.mosquitto.org"
+
         for port in open_ports:
             service = {}
 
             if verbose:
                 print("\033[K", end="\r")
-                verbose_print(f"Scanning {port} for Undefined")
+                verbose_print(f"Scanning {port} for MQTT")
 
-            service["port"] = port
-            service["protocol"] = "undefined"
-            service["service"] = "undefined"
+            try:
 
-            self.services.append(service)
+                def on_connect(client, userdata, flags, reason_code, properties):
+                    if reason_code == 0:
+                        print("Connected to MQTT Broker!")
+                        rem_ports.append(port)
+
+                        service["port"] = port
+                        service["protocol"] = "MQTT"
+                        service["service"] = "undefined"
+
+                        self.services.append(service)
+
+                        client.disconnect()
+                    if reason_code > 0:
+                        print("Failed to connect, return code %d\n", reason_code)
+
+                client = mqtt_client.Client(
+                    client_id="", userdata=None, protocol=mqtt_client.MQTTv5
+                )
+                client.on_connect = on_connect
+                client.connect(ip, port)
+                client.subscribe("A")
+                client.loop(2)
+
+            except Exception as e:
+                print("ERROR: ", e)
+
+        for port in rem_ports:
+            open_ports.remove(port)
+
+    # --------------------------
+    # MQTT - TLS
+    # --------------------------
+    def mqtts_check(self, open_ports: list, verbose: bool):
+        rem_ports = []
+        # ip = self.ip
+        ip = "test.mosquitto.org"
+
+        for port in open_ports:
+            service = {}
+
+            if verbose:
+                print("\033[K", end="\r")
+                verbose_print(f"Scanning {port} for MQTT-TLS")
+
+            try:
+
+                def on_connect(client, userdata, flags, reason_code, properties):
+                    if reason_code == 0:
+                        print("Connected to MQTT Broker!")
+                        rem_ports.append(port)
+
+                        service["port"] = port
+                        service["protocol"] = "MQTT"
+                        service["service"] = "undefined"
+
+                        self.services.append(service)
+
+                        client.disconnect()
+                    if reason_code > 0:
+                        print("Failed to connect, return code %d\n", reason_code)
+
+                client = mqtt_client.Client(
+                    client_id="", userdata=None, protocol=mqtt_client.MQTTv5
+                )
+                client.tls_set(ca_certs="../cert/domain.crt")
+                client.on_connect = on_connect
+                client.connect(ip, port)
+                client.subscribe("A")
+                client.loop(2)
+
+            except Exception as e:
+                print("ERROR: ", e)
+
+        for port in rem_ports:
+            open_ports.remove(port)
+
+    # --------------------------
+    # UNDEFINED
+    # --------------------------
+    def undefined(self, open_ports: list, verbose: bool):
+        rem_ports = []
+        ip = self.ip
+
+        for port in open_ports:
+            service = {}
+
+            if verbose:
+                print("\033[K", end="\r")
+                verbose_print(f"Scanning {port} for SSL-TLS")
+
+            try:
+                pass  # TODO
+            except Exception as e:
+                pass
+
+        for port in rem_ports:
+            open_ports.remove(port)
 
     # --------------------------
     # TEMPLATE
