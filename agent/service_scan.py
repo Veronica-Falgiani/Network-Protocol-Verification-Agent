@@ -775,11 +775,9 @@ class ServiceScan:
     # --------------------------
     # MQTT
     # --------------------------
-    # TODO: Add SSL testing
     def mqtt_check(self, open_ports: list, verbose: bool):
         rem_ports = []
-        # ip = self.ip
-        ip = "test.mosquitto.org"
+        ip = self.ip
 
         for port in open_ports:
             service = {}
@@ -791,30 +789,24 @@ class ServiceScan:
             try:
 
                 def on_connect(client, userdata, flags, reason_code, properties):
-                    if reason_code == 0:
-                        print("Connected to MQTT Broker!")
-                        rem_ports.append(port)
+                    rem_ports.append(port)
 
-                        service["port"] = port
-                        service["protocol"] = "MQTT"
-                        service["service"] = "undefined"
+                    service["port"] = port
+                    service["protocol"] = "MQTT"
+                    service["service"] = "undefined"
 
-                        self.services.append(service)
+                    self.services.append(service)
 
-                        client.disconnect()
-                    if reason_code > 0:
-                        print("Failed to connect, return code %d\n", reason_code)
+                    client.disconnect()
 
-                client = mqtt_client.Client(
-                    client_id="", userdata=None, protocol=mqtt_client.MQTTv5
-                )
+                client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
                 client.on_connect = on_connect
                 client.connect(ip, port)
                 client.subscribe("A")
                 client.loop(2)
 
             except Exception as e:
-                print("ERROR: ", e)
+                pass
 
         for port in rem_ports:
             open_ports.remove(port)
@@ -822,46 +814,41 @@ class ServiceScan:
     # --------------------------
     # MQTT - TLS
     # --------------------------
+    # TODO: Not working :(, cert is not valid
     def mqtts_check(self, open_ports: list, verbose: bool):
         rem_ports = []
-        # ip = self.ip
-        ip = "test.mosquitto.org"
+        ip = self.ip
 
         for port in open_ports:
             service = {}
 
             if verbose:
                 print("\033[K", end="\r")
-                verbose_print(f"Scanning {port} for MQTT-TLS")
+                verbose_print(f"Scanning {port} for MQTT")
 
             try:
 
                 def on_connect(client, userdata, flags, reason_code, properties):
-                    if reason_code == 0:
-                        print("Connected to MQTT Broker!")
-                        rem_ports.append(port)
+                    rem_ports.append(port)
 
-                        service["port"] = port
-                        service["protocol"] = "MQTT"
-                        service["service"] = "undefined"
+                    service["port"] = port
+                    service["protocol"] = "MQTT"
+                    service["service"] = "undefined"
 
-                        self.services.append(service)
+                    self.services.append(service)
 
-                        client.disconnect()
-                    if reason_code > 0:
-                        print("Failed to connect, return code %d\n", reason_code)
+                    client.disconnect()
 
-                client = mqtt_client.Client(
-                    client_id="", userdata=None, protocol=mqtt_client.MQTTv5
-                )
-                client.tls_set(ca_certs="../cert/domain.crt")
+                client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
+                client.tls_set_context(self.context)
+                client.tls_insecure_set(True)
                 client.on_connect = on_connect
                 client.connect(ip, port)
                 client.subscribe("A")
                 client.loop(2)
 
             except Exception as e:
-                print("ERROR: ", e)
+                pass
 
         for port in rem_ports:
             open_ports.remove(port)
