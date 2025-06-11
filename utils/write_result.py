@@ -18,22 +18,43 @@ def write_result(report: Results):
     os.chmod(f"{RES_DIR}", 0o777)
     os.chmod(f"{RES_DIR}img/", 0o777)
 
-    txt_result(report)
-    html_result(report)
+    # log_result(report)
+    json_result(report)
+    # html_result(report)
+
+    print(f"Results can be found in: {RES_DIR}")
 
 
-def txt_result(report):
-    file_txt = RES_DIR + f"{report.ip}_results.txt"
+def log_result(report):
+    file_log = RES_DIR + f"{report.ip}_results.log"
 
-    with open(file_txt, "w") as res_file:
+    with open(file_log, "w") as res_file:
         res_file.write(f"##### RESULTS  FOR {report.ip} #####\n\n")
         res_file.write("PORT \t PROTOCOL \t SERVICE\n")
-        res_file.write("----------------------------\n")
+        res_file.write("----------------------------\n\n\n")
 
         for result in report.report:
             res_file.write(str(result))
 
-    print(f"Results can be found in: {file_txt}")
+
+def json_result(report):
+    file_json = RES_DIR + f"{report.ip}_results.json"
+
+    with open(file_json, "w") as res_file:
+        res_file.write(f'''
+        {{
+        \t"ip": "{report.ip}",
+        \t"time": "{datetime.today().strftime("%Y-%m-%d_%H:%M:%S")}",
+        \t"services": [
+        ''')
+
+        for result in report.report:
+            res_file.write(repr(result))
+
+        res_file.write("""
+        \t]
+        }
+        """)
 
 
 def html_result(report: Results):
