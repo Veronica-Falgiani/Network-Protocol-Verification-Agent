@@ -12,7 +12,7 @@ class Results:
         self.unsafe_tls = False
 
     def __str__(self):
-        string = f"{str(self.port):<10s} {self.prot:<15s} {self.service:<100s}\n"
+        string = f"{str(self.port):<10s} {self.prot:<15s} {self.service:<100s}\n|\n"
 
         # Print if the service version is vulnerable
         string += "| --------------- VERSION CHECK ---------------\n"
@@ -50,6 +50,8 @@ class Results:
                 string += f"|\\___ {vuln['name']}\n"
                 string += f"|     description: {vuln['description']}\n"
                 string += f"|     severity: {vuln['severity']}\n"
+
+        string += "\n\n"
 
         return string
 

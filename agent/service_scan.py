@@ -38,50 +38,28 @@ class ServiceScan:
 
     def test_scan(self, open_ports: list, verbose: bool):
         # Write portocols to test here
-        self.mqtt_check(open_ports, verbose)
+        for self.check in self.tcp_check:
+            self.check(self, open_ports, verbose)
 
-        # SSL protocols
-        #        self.mqtts_check(open_ports, verbose)
-
-        self.undefined(open_ports, verbose)
+        # Clean line for verbose print
         print("\033[K", end="\r")
 
         # Sorts list by port
         self.services = sorted(self.services, key=itemgetter("port"))
 
     def tcp_scan(self, open_ports: list, verbose: bool):
-        self.ftp_check(open_ports, verbose)
-        self.ssh_check(open_ports, verbose)
-        self.telnet_check(open_ports, verbose)
-        self.smtp_check(open_ports, verbose)
-        self.dns_check(open_ports, verbose)
-        self.http_check(open_ports, verbose)
-        self.pop_check(open_ports, verbose)
-        self.imap_check(open_ports, verbose)
-        self.smb_check(open_ports, verbose)
-        self.mqtt_check(open_ports, verbose)
+        for self.check in self.tcp_check:
+            self.check(self, open_ports, verbose)
 
-        # SSL protocols
-        self.ftps_check(open_ports, verbose)
-        self.https_check(open_ports, verbose)
-        self.smtps_check(open_ports, verbose)
-        self.pops_check(open_ports, verbose)
-        self.imaps_check(open_ports, verbose)
-        self.ssltls_check(open_ports, verbose)
-
-        self.undefined(open_ports, verbose)
+        # Clean line for verbose print
         print("\033[K", end="\r")
 
         # Sorts list by port
         self.services = sorted(self.services, key=itemgetter("port"))
 
     def udp_scan(self, open_ports: list, verbose: bool):
-        self.http_check(open_ports, verbose)
-        self.https_check(open_ports, verbose)
-        self.dns_check(open_ports, verbose)
-        self.dhcp_check(open_ports, verbose)  # Not working
-        # imap_check(services)
-        self.undefined(open_ports, verbose)
+        for self.check in self.udp_check:
+            self.check(self, open_ports, verbose)
 
         # Clean line for verbose print
         print("\033[K", end="\r")
@@ -854,6 +832,54 @@ class ServiceScan:
             open_ports.remove(port)
 
     # --------------------------
+    # NFS
+    # --------------------------
+    def nfs_check(self, open_ports: list, verbose: bool):
+        rem_ports = []
+        ip = self.ip
+
+        for port in open_ports:
+            service = {}
+            if verbose:
+                print("\033[K", end="\r")
+                verbose_print(f"Scanning {port} for PROTOCOL")
+
+            try:
+                auth = {
+                    "flavor": 1,
+                    "machine_name": "host1",
+                    "uid": 0,
+                    "gid": 0,
+                    "aux_gid": list(),
+                }
+                mount = Mount(ip, port, 3, auth)
+                mount.connect()
+                mnt_res = mount.mnt("/data", auth)
+                if mnt_res == MNT3_OK:
+                    print("Yeah!")
+                mount.disconnect()
+
+                # nfs3 = NFSv3(ip, port, 3, None)
+                # nfs3.connect()
+                # print(nfs3.fsinfo(b"/"))
+                # print(nfs3)
+                # nfs3.disconnect()
+
+                rem_ports.append(port)
+
+                service["port"] = port
+                service["protocol"] = "NFS"
+                service["service"] = "NFSv3"
+
+                self.services.append(service)
+
+            except Exception as e:
+                print(port, e)
+
+        for port in rem_ports:
+            open_ports.remove(port)
+
+    # --------------------------
     # UNDEFINED
     # --------------------------
     def undefined(self, open_ports: list, verbose: bool):
@@ -880,10 +906,10 @@ class ServiceScan:
     # --------------------------
     def check(self, open_ports: list, verbose: bool):
         rem_ports = []
-        service = {}
         ip = self.ip
 
         for port in open_ports:
+            service = {}
             if verbose:
                 print("\033[K", end="\r")
                 verbose_print(f"Scanning {port} for PROTOCOL")
@@ -892,10 +918,45 @@ class ServiceScan:
                 # Insert code here
 
                 rem_ports.append(port)
-                services[port] = "SSL/TLS"
+                service["port"] = port
+                service["protocol"] = "MQTT"
+                service["service"] = "undefined"
+
+                self.services.append(service)
 
             except Exception:
                 pass
 
         for port in rem_ports:
             open_ports.remove(port)
+
+    tcp_check = [
+        ftp_check,
+        ssh_check,
+        telnet_check,
+        smtp_check,
+        dns_check,
+        http_check,
+        pop_check,
+        imap_check,
+        smb_check,
+        mqtt_check,
+        # SSL protocols
+        ftps_check,
+        https_check,
+        smtps_check,
+        pops_check,
+        imaps_check,
+        mqtts_check,
+        ssltls_check,
+        # Undefined
+        undefined,
+    ]
+
+    udp_check = [
+        http_check,
+        https_check,
+        dns_check,
+        # Undefined
+        undefined,
+    ]
