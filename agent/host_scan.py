@@ -21,7 +21,7 @@ def host_scan(host_arg: str, ip: str, verbose: bool):
         case "u":
             res_status = udp_scan(ip)
         case None:
-            res_status = ping_scan(ip)
+            res_status = tcp_syn_scan(ip)
         case _:
             print_fail("Cannot find host scan type")
             sys.exit()
@@ -39,9 +39,9 @@ def ping_scan(ip: str) -> bool:
     res_status = False
 
     packet = IP(dst=ip, ttl=20) / ICMP()
-    res = sr1(packet, timeout=5, verbose=0)
+    res = sr1(packet, timeout=2, verbose=0)
 
-    if res is not None and "dest-unreach" in res:
+    if res is not None and res.type != 3:
         res_status = True
 
     return res_status
@@ -55,9 +55,9 @@ def tcp_syn_scan(ip: str) -> bool:
 
     for port in SCAN_PORTS:
         packet = IP(dst=ip) / TCP(dport=port, flags="S")
-        res = sr1(packet, timeout=5, verbose=0)
+        res = sr1(packet, timeout=2, verbose=0)
 
-        if res is not None and "dest-unreach" in res:
+        if res is not None and "dest-unreach" not in res:
             flag_res = res.sprintf("%TCP.flags%")
 
             if flag_res == "SA":
@@ -74,9 +74,9 @@ def tcp_ack_scan(ip: str) -> bool:
 
     for port in SCAN_PORTS:
         packet = IP(dst=ip) / TCP(dport=port, flags="A")
-        res = sr1(packet, timeout=5, verbose=0)
+        res = sr1(packet, timeout=2, verbose=0)
 
-        if res is not None and "dest-unreach" in res:
+        if res is not None and "dest-unreach" not in res:
             flag_res = res.sprintf("%TCP.flags%")
 
             if flag_res == "R":
@@ -95,7 +95,7 @@ def udp_scan(ip: str) -> bool:
     udp_port = 40125
 
     packet = IP(dst=ip) / UDP(dport=udp_port) / "Hello"
-    res = sr1(packet, timeout=5, verbose=0)
+    res = sr1(packet, timeout=2, verbose=0)
 
     if res is None or "dest-unreach" in res:
         return res_status
