@@ -19,9 +19,9 @@ def write_result(report: Results):
     os.chmod(f"{RES_DIR}", 0o777)
     os.chmod(f"{RES_DIR}img/", 0o777)
 
-    # log_result(report)
+    log_result(report)
     json_result(report)
-    # html_result(report)
+    html_result(report)
 
     print(f"Results can be found in: {RES_DIR}")
 
