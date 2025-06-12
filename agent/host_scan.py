@@ -57,7 +57,7 @@ def tcp_syn_scan(ip: str) -> bool:
         packet = IP(dst=ip) / TCP(dport=port, flags="S")
         res = sr1(packet, timeout=2, verbose=0)
 
-        if res is not None and "dest-unreach" not in res:
+        if res is not None and res.type != 3:
             flag_res = res.sprintf("%TCP.flags%")
 
             if flag_res == "SA":
@@ -76,7 +76,7 @@ def tcp_ack_scan(ip: str) -> bool:
         packet = IP(dst=ip) / TCP(dport=port, flags="A")
         res = sr1(packet, timeout=2, verbose=0)
 
-        if res is not None and "dest-unreach" not in res:
+        if res is not None and res.type != 3:
             flag_res = res.sprintf("%TCP.flags%")
 
             if flag_res == "R":
@@ -97,7 +97,7 @@ def udp_scan(ip: str) -> bool:
     packet = IP(dst=ip) / UDP(dport=udp_port) / "Hello"
     res = sr1(packet, timeout=2, verbose=0)
 
-    if res is None or "dest-unreach" in res:
+    if res is None or res.type == 3:
         return res_status
 
     icmp_type = res.sprintf("%ICMP.type%")
