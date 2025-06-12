@@ -55,6 +55,19 @@ class Results:
 
         return string
 
+    def __json__(self):
+        repr = {
+            "port": self.port,
+            "protocol": self.prot,
+            "service": self.service,
+            "unsafe_version": self.unsafe_ver,
+            "unsafe_version_cve": self.unsafe_ver_cve,
+            "misconfigurations": self.vuln_misconfigs,
+            "auth_misconfigurations": self.vuln_auth_misconfigs,
+        }
+
+        return repr
+
     def set_misconfigs(self, vulns: dict):
         self.vuln_misconfigs.append(vulns)
 

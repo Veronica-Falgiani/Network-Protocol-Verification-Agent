@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import matplotlib.pyplot as plt
+import json
 from jinja2 import Environment, FileSystemLoader
 from agent.results import Results
 
@@ -41,20 +42,16 @@ def json_result(report):
     file_json = RES_DIR + f"{report.ip}_results.json"
 
     with open(file_json, "w") as res_file:
-        res_file.write(f'''
-        {{
-        \t"ip": "{report.ip}",
-        \t"time": "{datetime.today().strftime("%Y-%m-%d_%H:%M:%S")}",
-        \t"services": [
-        ''')
+        res_dict = {
+            "ip": report.ip,
+            "timestamp": datetime.today().strftime("%Y-%m-%d_%H:%M:%S"),
+            "services": [],
+        }
 
         for result in report.report:
-            res_file.write(repr(result))
+            res_dict["services"].append(result.__json__())
 
-        res_file.write("""
-        \t]
-        }
-        """)
+        json.dump(repr(res_dict), res_file, indent=4)
 
 
 def html_result(report: Results):
