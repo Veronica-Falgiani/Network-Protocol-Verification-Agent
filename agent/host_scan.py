@@ -1,5 +1,4 @@
 import sys
-import socket
 from utils.terminal_colors import print_fail, print_ok, verbose_print
 from scapy.all import *
 
