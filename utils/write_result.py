@@ -26,6 +26,7 @@ def write_result(report: Results):
     print(f"Results can be found in: {RES_DIR}")
 
 
+# Writes a human readable log
 def log_result(report):
     file_log = RES_DIR + f"{report.ip}_results.log"
 
@@ -38,6 +39,7 @@ def log_result(report):
             res_file.write(str(result))
 
 
+# Creates a json file with all the results
 def json_result(report):
     file_json = RES_DIR + f"{report.ip}_results.json"
 
@@ -54,6 +56,7 @@ def json_result(report):
         json.dump(repr(res_dict), res_file, indent=4)
 
 
+# Creates a html page with results and graphs
 def html_result(report: Results):
     # Creates a directory (if it doesn't exist) and a result file
     file_html = RES_DIR + f"{report.ip}_results.html"
@@ -68,20 +71,32 @@ def html_result(report: Results):
         html_misconfigs = ""
         html_auth_misconfigs = ""
 
+        # Protocol name and service version
         html_title = f"""
             <div id={result.prot} class="tab-pane fade">
                 <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
         """
 
-        html_version = f"""
-            <div class='my-3'>
-                <hr>
-                <h4 style="text-align:center"> SERVICE VERSION </h4>
-                <p>Service vulnerable: {result.unsafe_ver}</p>
-                <p>Reference CVE: <a href="{result.unsafe_ver_cve}" target="_blank">{result.unsafe_ver_cve[-13:]}</a></p>
-            </div>
-        """
+        # Result for checking service version
+        if not result.unsafe_ver:
+            html_version = """
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> SERVICE VERSION </h4>
+                    <p>This service version is not vulnerable</p>
+                </div>
+            """
+        else:
+            html_version = f"""
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> SERVICE VERSION </h4>
+                    <p>This service version is vulnerable, an update is mandatory!</p>
+                    <p>Reference CVE: <a href="{result.unsafe_ver_cve}" target="_blank">{result.unsafe_ver_cve[-13:]}</a></p>
+                </div>
+            """
 
+        # Result for checking TLS version
         if "SSL" in result.service or "TLS" in result.service:
             html_tls = f"""
                 <div class='my-3'>
@@ -92,7 +107,7 @@ def html_result(report: Results):
             """
 
         # Checks if there are misconfigs to print
-        if result.max_misconfigs == 0:
+        if (result.serv_max_misconfigs + result.prot_max_misconfigs) == 0:
             html_misconfigs += """
                 <div class='my-3'>
                     <hr>
@@ -151,7 +166,12 @@ def html_result(report: Results):
                 + "</ul></div>"
             )
 
-            draw_graph(severity_html, result, result.max_misconfigs, "")
+            draw_graph(
+                severity_html,
+                result,
+                (result.prot_max_misconfigs + result.serv_max_misconfigs),
+                "",
+            )
 
         # No misconfigs for the specified protocol
         else:
@@ -164,12 +184,21 @@ def html_result(report: Results):
             """
 
         # Checks if there are misconfigs to print
-        if result.max_auth_misconfigs == 0:
+        if (result.prot_max_auth_misconfigs + result.serv_max_auth_misconfigs) == 0:
             html_auth_misconfigs += """
                 <div class='my-3'>
                     <hr>
                     <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
                     <p class="my-3">No tests found for the protocol</p>
+                </div>
+            """
+
+        elif not result.prot_auth and not result.serv_auth:
+            html_auth_misconfigs += """
+                <div class='my-3'>
+                    <hr>
+                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <p class="my-3">No credentials were given</p>
                 </div>
             """
 
@@ -223,7 +252,12 @@ def html_result(report: Results):
                 + "</ul></div>"
             )
 
-            draw_graph(severity_html, result, result.max_auth_misconfigs, "auth")
+            draw_graph(
+                severity_html,
+                result,
+                (result.prot_max_auth_misconfigs + result.serv_max_auth_misconfigs),
+                "auth",
+            )
 
         # No misconfigs for the specified protocol
         else:
@@ -234,12 +268,21 @@ def html_result(report: Results):
                     <p class="my-3">The service has been tested and no misconfigurations have been found</p>
                 </div>
             """
+
         # Adding buttons for protocols
-        if result.max_misconfigs == 0 and result.max_auth_misconfigs == 0:
+        if (
+            (result.prot_max_misconfigs + result.serv_max_misconfigs) == 0
+            and (result.prot_max_auth_misconfigs + result.serv.max_auth_misconfigs) == 0
+            and not result.unsafe_ver
+        ):
             html_pills += f""" 
                 <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></button></li>
             """
-        elif len(result.vuln_misconfigs) != 0 or len(result.vuln_auth_misconfigs) != 0:
+        elif (
+            len(result.vuln_misconfigs) != 0
+            or len(result.vuln_auth_misconfigs) != 0
+            or result.unsafe_ver
+        ):
             html_pills += f""" 
                 <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
             """
@@ -272,6 +315,7 @@ def html_result(report: Results):
         res_file.write(html)
 
 
+# Creates a png image of a pie chart based on the results of a protocol
 def draw_graph(severity_html: dict, result: Results, max_vulns: int, type: str):
     labels = "high", "medium", "low", "ok"
     colors = ["#EC6B56", "#FFC154", "#47B39C", "skyblue"]

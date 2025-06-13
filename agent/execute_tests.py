@@ -27,6 +27,7 @@ class ExecuteTests:
         return string
 
     def execute_tests(self, services: list, verbose: bool):
+        # Protocol test
         for service in services:
             port = service["port"]
             prot = service["protocol"]
@@ -45,16 +46,16 @@ class ExecuteTests:
                     auth_misconfigs = test_file["auth_misconfigs"]
                     serv_names = test_file["serv_names"]
 
-                    max_misconfigs = len(misconfigs)
+                    # Create class
+                    results = Results(port, prot, service)
+
+                    prot_max_misconfigs = len(misconfigs)
                     i_mis = 1
 
-                    max_auth_misconfigs = len(auth_misconfigs)
+                    prot_max_auth_misconfigs = len(auth_misconfigs)
                     i_auth = 1
 
-                    # Create class
-                    results = Results(
-                        port, prot, service, max_misconfigs, max_auth_misconfigs
-                    )
+                    results.add_prot_max(prot_max_misconfigs, prot_max_auth_misconfigs)
 
                     # Start testing for misconfigurations
                     auth = False
@@ -62,7 +63,7 @@ class ExecuteTests:
                         misconfigs,
                         verbose,
                         i_mis,
-                        max_misconfigs,
+                        prot_max_misconfigs,
                         port,
                         prot,
                         service,
@@ -76,12 +77,13 @@ class ExecuteTests:
 
                         # Start testing for misconfigurations
                         if login_list:
+                            results.prot_auth = True
                             auth = True
                             self.check_misconfigs(
                                 auth_misconfigs,
                                 verbose,
                                 i_auth,
-                                max_auth_misconfigs,
+                                prot_max_auth_misconfigs,
                                 port,
                                 prot,
                                 service,
@@ -90,7 +92,7 @@ class ExecuteTests:
                                 login_list,
                             )
 
-                    # Tests services
+                    # Services test
                     for name in serv_names:
                         if name in service.lower():
                             rel_path_serv = "../tests/serv/" + name + "_test.json"
@@ -109,19 +111,14 @@ class ExecuteTests:
                                         service, vuln_serv_version, results
                                     )
 
-                                    max_misconfigs = len(misconfigs)
+                                    serv_max_misconfigs = len(misconfigs)
                                     i_mis = 1
 
-                                    max_auth_misconfigs = len(auth_misconfigs)
+                                    serv_max_auth_misconfigs = len(auth_misconfigs)
                                     i_auth = 1
 
-                                    # Create class
-                                    results = Results(
-                                        port,
-                                        prot,
-                                        service,
-                                        max_misconfigs,
-                                        max_auth_misconfigs,
+                                    results.add_serv_max(
+                                        serv_max_misconfigs, serv_max_auth_misconfigs
                                     )
 
                                     # Start testing for misconfigurations
@@ -130,7 +127,7 @@ class ExecuteTests:
                                         misconfigs,
                                         verbose,
                                         i_mis,
-                                        max_misconfigs,
+                                        serv_max_misconfigs,
                                         port,
                                         prot,
                                         service,
@@ -146,12 +143,13 @@ class ExecuteTests:
 
                                         # Start testing for misconfigurations
                                         if login_list:
+                                            results.serv_auth = True
                                             auth = True
                                             self.check_misconfigs(
                                                 auth_misconfigs,
                                                 verbose,
                                                 i_auth,
-                                                max_auth_misconfigs,
+                                                serv_max_auth_misconfigs,
                                                 port,
                                                 prot,
                                                 service,
@@ -161,10 +159,10 @@ class ExecuteTests:
                                             )
 
                             except FileNotFoundError:
-                                results = Results(port, prot, service, 0, 0)
+                                pass
 
             except FileNotFoundError:
-                results = Results(port, prot, service, 0, 0)
+                results = Results(port, prot, service)
 
             self.report.append(results)
 

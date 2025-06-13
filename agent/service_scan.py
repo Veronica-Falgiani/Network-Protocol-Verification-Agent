@@ -845,26 +845,7 @@ class ServiceScan:
                 verbose_print(f"Scanning {port} for PROTOCOL")
 
             try:
-                auth = {
-                    "flavor": 1,
-                    "machine_name": "host1",
-                    "uid": 0,
-                    "gid": 0,
-                    "aux_gid": list(),
-                }
-                mount = Mount(ip, port, 3, auth)
-                mount.connect()
-                mnt_res = mount.mnt("/data", auth)
-                if mnt_res == MNT3_OK:
-                    print("Yeah!")
-                mount.disconnect()
-
-                # nfs3 = NFSv3(ip, port, 3, None)
-                # nfs3.connect()
-                # print(nfs3.fsinfo(b"/"))
-                # print(nfs3)
-                # nfs3.disconnect()
-
+                # TODO: NFS
                 rem_ports.append(port)
 
                 service["port"] = port

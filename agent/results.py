@@ -1,15 +1,19 @@
 class Results:
-    def __init__(self, port, prot, service, max_misconfigs, max_auth_misconfigs):
+    def __init__(self, port, prot, service):
         self.port = port
         self.prot = prot
         self.service = service
-        self.max_misconfigs = max_misconfigs
-        self.max_auth_misconfigs = max_auth_misconfigs
+        self.prot_max_misconfigs = 0
+        self.prot_max_auth_misconfigs = 0
+        self.serv_max_misconfigs = 0
+        self.serv_max_auth_misconfigs = 0
         self.vuln_misconfigs = []
         self.vuln_auth_misconfigs = []
         self.unsafe_ver = False
         self.unsafe_ver_cve = ""
         self.unsafe_tls = False
+        self.prot_auth = False
+        self.serv_auth = False
 
     def __str__(self):
         string = f"{str(self.port):<10s} {self.prot:<15s} {self.service:<100s}\n|\n"
@@ -17,10 +21,12 @@ class Results:
         # Print if the service version is vulnerable
         string += "| --------------- VERSION CHECK ---------------\n"
         if self.unsafe_ver:
-            string += "|\\___ THE SERVICE IS VULNERABLE AND NEEDS TO BE UPDATED!\n"
+            string += (
+                "|\\___ THIS SERVICE VERSION IS VULNERABLE AND NEEDS TO BE UPDATED!\n"
+            )
             string += f"|     reference: {self.unsafe_ver_cve}\n|\n"
         else:
-            string += "|\\___ The service is not vulnerable\n|\n"
+            string += "|\\___ The service version is not vulnerable.\n|\n"
 
         # Print if the ssl/tls version is outdated
         if "TLS" in self.service or "SSL" in self.service:
@@ -32,8 +38,10 @@ class Results:
 
         # Print all the information about the tests
         string += "| --------------- MISCONFIGURATIONS ---------------\n"
-        if len(self.vuln_misconfigs) == 0:
-            string += "|\\___ No misconfigurations found\n"
+        if (self.prot_max_misconfigs + self.serv_max_misconfigs) == 0:
+            string += "|\\___ No tests found for this protocol\n"
+        elif len(self.vuln_misconfigs) == 0:
+            string += "|\\___ The protocol has been tested and no misconfigurations have been found\n"
         else:
             for vuln in self.vuln_misconfigs:
                 string += f"|\\___ {vuln['name']}\n"
@@ -43,8 +51,12 @@ class Results:
         string += (
             "|\n| --------------- AUTHENTICATED MISCONFIGURATIONS ---------------\n"
         )
-        if len(self.vuln_auth_misconfigs) == 0:
-            string += "|\\___ No authenticated misconfigurations found\n"
+        if (self.prot_max_auth_misconfigs + self.serv_max_auth_misconfigs) == 0:
+            string += "|\\___ No tests found for this protocol\n"
+        elif not self.prot_auth and not self.serv_auth:
+            string += "|\\___ No credentials were given\n"
+        elif len(self.vuln_auth_misconfigs) == 0:
+            string += "|\\___ The protocol has been tested and no misconfigurations have been found\n"
         else:
             for vuln in self.vuln_auth_misconfigs:
                 string += f"|\\___ {vuln['name']}\n"
@@ -67,6 +79,14 @@ class Results:
         }
 
         return repr
+
+    def add_prot_max(self, prot_max_misconfigs: int, prot_max_auth_misconfigs: int):
+        self.prot_max_misconfigs = prot_max_misconfigs
+        self.prot_max_auth_misconfigs = prot_max_auth_misconfigs
+
+    def add_serv_max(self, serv_max_misconfigs: int, serv_max_auth_misconfigs: int):
+        self.serv_max_misconfigs = serv_max_misconfigs
+        self.serv_max_auth_misconfigs = serv_max_auth_misconfigs
 
     def set_misconfigs(self, vulns: dict):
         self.vuln_misconfigs.append(vulns)
