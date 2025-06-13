@@ -70,25 +70,27 @@ class ExecuteTests:
                         auth,
                     )
 
-                    # Asks the user for login info and inserts the correct login messages in a list
-                    login_list = self.try_login(prot, port, service, login)
+                    # If auth_misconfigs has tests, asks the user for login info and inserts the correct login messages in a list
+                    if auth_misconfigs:
+                        login_list = self.try_login(prot, port, service, login)
 
-                    # Start testing for misconfigurations
-                    if login_list:
-                        auth = True
-                        self.check_misconfigs(
-                            auth_misconfigs,
-                            verbose,
-                            i_auth,
-                            max_auth_misconfigs,
-                            port,
-                            prot,
-                            service,
-                            results,
-                            auth,
-                            login_list,
-                        )
+                        # Start testing for misconfigurations
+                        if login_list:
+                            auth = True
+                            self.check_misconfigs(
+                                auth_misconfigs,
+                                verbose,
+                                i_auth,
+                                max_auth_misconfigs,
+                                port,
+                                prot,
+                                service,
+                                results,
+                                auth,
+                                login_list,
+                            )
 
+                    # Tests services
                     for name in serv_names:
                         if name in service.lower():
                             rel_path_serv = "../tests/serv/" + name + "_test.json"
@@ -101,7 +103,7 @@ class ExecuteTests:
                                     login = test_file["login"]
                                     auth_misconfigs = test_file["auth_misconfigs"]
                                     vuln_serv_version = test_file["vuln_serv_version"]
-                                    print(vuln_serv_version)
+
                                     # Check if the service is vulnerable by checking the banner
                                     self.check_banner(
                                         service, vuln_serv_version, results
@@ -136,26 +138,27 @@ class ExecuteTests:
                                         auth,
                                     )
 
-                                    # Asks the user for login info and inserts the correct login messages in a list
-                                    login_list = self.try_login(
-                                        prot, port, service, login
-                                    )
-
-                                    # Start testing for misconfigurations
-                                    if login_list:
-                                        auth = True
-                                        self.check_misconfigs(
-                                            auth_misconfigs,
-                                            verbose,
-                                            i_auth,
-                                            max_auth_misconfigs,
-                                            port,
-                                            prot,
-                                            service,
-                                            results,
-                                            auth,
-                                            login_list,
+                                    # If auth_misconfigs has tests, asks the user for login info and inserts the correct login messages in a list
+                                    if auth_misconfigs:
+                                        login_list = self.try_login(
+                                            prot, port, service, login
                                         )
+
+                                        # Start testing for misconfigurations
+                                        if login_list:
+                                            auth = True
+                                            self.check_misconfigs(
+                                                auth_misconfigs,
+                                                verbose,
+                                                i_auth,
+                                                max_auth_misconfigs,
+                                                port,
+                                                prot,
+                                                service,
+                                                results,
+                                                auth,
+                                                login_list,
+                                            )
 
                             except FileNotFoundError:
                                 results = Results(port, prot, service, 0, 0)
