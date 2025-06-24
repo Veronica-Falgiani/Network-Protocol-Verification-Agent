@@ -14,6 +14,7 @@ Currently supported protocols:
 - pop (pops)
 - imap (imaps)
 - smb
+- mqtt (mqtts)
 - ssl/tls
 
 ## Installation
@@ -26,23 +27,6 @@ You'll need to install the required python packages using the `requirements.txt`
 ```
 pip install -r requirements.txt
 ```
-
-### Self Signed Certification
-
-For ssl/tls protocols to work you need to create a Self-Signed Certificate. 
-To do this, install `OpenSSL`. 
-
-Create a `cert/` folder and initialize the private key and Certificate Signing Request:
-```
-openssl req -newkey rsa:2048 -keyout domain.key -out domain.csr
-```
-
-Then create the Self-Signed Certificate using:
-```
-openssl x509 -signkey domain.key -in domain.csr -req -days 365 -out domain.crt
-```
-
-**!!! Do not change the file names in the commands !!!**
 
 ## Usage
 

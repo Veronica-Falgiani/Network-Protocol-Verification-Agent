@@ -8,6 +8,7 @@ from ftplib import FTP, FTP_TLS
 from smtplib import SMTP, SMTP_SSL
 from telnetlib import Telnet
 import ssl
+import certifi
 import dns.message, dns.query
 from poplib import POP3, POP3_SSL
 from imaplib import IMAP4, IMAP4_SSL
@@ -22,7 +23,7 @@ class ServiceScan:
     context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
     context.options &= ~ssl.OP_NO_SSLv3
     context.minimum_version = 768
-    context.load_verify_locations("cert/domain.crt")
+    context.load_verify_locations(certifi.where())
 
     def __init__(self, ip: str):
         self.ip = ip
@@ -215,7 +216,7 @@ class ServiceScan:
 
             try:
                 telnet = Telnet(ip, port, timeout=3)
-                res = telnet.read_until(b"login: ", timeout=3)
+                res = telnet.read_until(b"login:", timeout=3)
 
                 if "login:" in str(res):
                     rem_ports.append(port)
@@ -228,8 +229,8 @@ class ServiceScan:
 
                 telnet.close()
 
-            except Exception:
-                pass
+            except Exception as e:
+                print(e)
 
         for port in rem_ports:
             open_ports.remove(port)
@@ -759,6 +760,7 @@ class ServiceScan:
 
         for port in open_ports:
             service = {}
+            port = 1884
 
             if verbose:
                 print("\033[K", end="\r")
@@ -771,7 +773,6 @@ class ServiceScan:
 
                     service["port"] = port
                     service["protocol"] = "MQTT"
-                    service["service"] = "undefined"
 
                     self.services.append(service)
 
@@ -779,7 +780,19 @@ class ServiceScan:
 
                 client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
                 client.on_connect = on_connect
-                client.connect(ip, port)
+                client.connect(ip, port, 3)
+
+                # Get version of MQTT
+                protver = client.protocol
+                if protver == 3:
+                    service["service"] = "MQTTv31"
+                elif protver == 4:
+                    service["service"] = "MQTTv311"
+                elif protver == 5:
+                    service["service"] = "MQTTv5"
+                else:
+                    service["service"] = "undefined"
+
                 client.subscribe("A")
                 client.loop(2)
 
@@ -792,7 +805,6 @@ class ServiceScan:
     # --------------------------
     # MQTT - TLS
     # --------------------------
-    # TODO: Not working :(, cert is not valid
     def mqtts_check(self, open_ports: list, verbose: bool):
         rem_ports = []
         ip = self.ip
@@ -821,7 +833,19 @@ class ServiceScan:
                 client.tls_set_context(self.context)
                 client.tls_insecure_set(True)
                 client.on_connect = on_connect
-                client.connect(ip, port)
+                client.connect(ip, port, 3)
+
+                # Get version of MQTT
+                protver = client.protocol
+                if protver == 3:
+                    service["service"] = "MQTTv31"
+                elif protver == 4:
+                    service["service"] = "MQTTv311"
+                elif protver == 5:
+                    service["service"] = "MQTTv5"
+                else:
+                    service["service"] = "undefined"
+
                 client.subscribe("A")
                 client.loop(2)
 

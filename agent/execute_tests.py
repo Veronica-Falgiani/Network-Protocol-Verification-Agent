@@ -2,6 +2,7 @@ import json
 import os
 import socket
 import ssl
+import certifi
 import getpass
 from utils.terminal_colors import verbose_print
 from agent.results import Results
@@ -12,7 +13,7 @@ class ExecuteTests:
     context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
     context.options &= ~ssl.OP_NO_SSLv3
     context.minimum_version = 768
-    context.load_verify_locations("cert/domain.crt")
+    context.load_verify_locations(certifi.where())
 
     def __init__(self, ip):
         self.ip = ip
