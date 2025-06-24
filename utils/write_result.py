@@ -272,7 +272,7 @@ def html_result(report: Results):
         # Adding buttons for protocols
         if (
             (result.prot_max_misconfigs + result.serv_max_misconfigs) == 0
-            and (result.prot_max_auth_misconfigs + result.serv.max_auth_misconfigs) == 0
+            and (result.prot_max_auth_misconfigs + result.serv_max_auth_misconfigs) == 0
             and not result.unsafe_ver
         ):
             html_pills += f""" 
