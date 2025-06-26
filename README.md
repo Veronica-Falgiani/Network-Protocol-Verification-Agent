@@ -21,6 +21,10 @@ Currently supported protocols:
 
 The script has been tested for **python version 3.13**
 
+### Required packages
+
+`nfs-utils` are required for the nfs scan to work. Install it with your preferred package manager.
+
 ### Required python packages
 
 You'll need to install the required python packages using the `requirements.txt` file:

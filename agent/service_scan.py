@@ -16,6 +16,7 @@ from impacket.smbconnection import SMBConnection
 import paho.mqtt.client as mqtt_client
 from operator import itemgetter
 from enum import *
+import subprocess
 
 
 class ServiceScan:
@@ -861,25 +862,45 @@ class ServiceScan:
     def nfs_check(self, open_ports: list, verbose: bool):
         rem_ports = []
         ip = self.ip
+        nfs_dict = {}
+        service = {}
 
-        for port in open_ports:
-            service = {}
-            if verbose:
-                print("\033[K", end="\r")
-                verbose_print(f"Scanning {port} for PROTOCOL")
+        if verbose:
+            print("\033[K", end="\r")
+            verbose_print("Scanning for NFS")
 
-            try:
-                # TODO: NFS
-                rem_ports.append(port)
+        try:
+            # Getting rpc info
+            res = subprocess.run(
+                ["rpcinfo", "-p", f"{ip}"], capture_output=True, text=True
+            )
+            strings = res.stdout.split("\n")
 
-                service["port"] = port
-                service["protocol"] = "NFS"
-                service["service"] = "NFSv3"
+            for string in strings:
+                # Filtering for nfs
+                if "nfs" in string and "nfs_acl" not in string:
+                    # Extract only needed information and remove empty items
+                    str_list = string.split(" ")
+                    str_list = list(filter(None, str_list))
 
-                self.services.append(service)
+                    if str_list[3] in nfs_dict:
+                        nfs_dict[str_list[3]] += f"NFSv{str_list[1]} "
+                    else:
+                        nfs_dict[str_list[3]] = f"NFSv{str_list[1]} "
 
-            except Exception as e:
-                print(port, e)
+            # Insert ports, only if they were previously scanned
+            for port, version in nfs_dict.items():
+                if int(port) in open_ports:
+                    rem_ports.append(int(port))
+
+                    service["port"] = int(port)
+                    service["protocol"] = "NFS"
+                    service["service"] = version
+
+                    self.services.append(service)
+
+        except Exception as e:
+            pass
 
         for port in rem_ports:
             open_ports.remove(port)
@@ -946,6 +967,7 @@ class ServiceScan:
         imap_check,
         smb_check,
         mqtt_check,
+        nfs_check,
         # SSL protocols
         ftps_check,
         https_check,
