@@ -53,6 +53,9 @@ class ServiceScan:
         for self.check in self.tcp_check:
             self.check(self, open_ports, verbose)
 
+        # Out of for because I needed third argument
+        self.nfs_check(open_ports, verbose, "T")
+
         # Clean line for verbose print
         print("\033[K", end="\r")
 
@@ -62,6 +65,9 @@ class ServiceScan:
     def udp_scan(self, open_ports: list, verbose: bool):
         for self.check in self.udp_check:
             self.check(self, open_ports, verbose)
+
+        # Out of for because I needed third argument
+        self.nfs_check(open_ports, verbose, "U")
 
         # Clean line for verbose print
         print("\033[K", end="\r")
@@ -231,7 +237,7 @@ class ServiceScan:
                 telnet.close()
 
             except Exception as e:
-                print(e)
+                pass
 
         for port in rem_ports:
             open_ports.remove(port)
@@ -859,11 +865,13 @@ class ServiceScan:
     # --------------------------
     # NFS
     # --------------------------
-    def nfs_check(self, open_ports: list, verbose: bool):
+    def nfs_check(self, open_ports: list, verbose: bool, scan_type: str):
         rem_ports = []
         ip = self.ip
-        nfs_dict = {}
         service = {}
+
+        nfs_dict = {}
+        strings = []
 
         if verbose:
             print("\033[K", end="\r")
@@ -874,7 +882,17 @@ class ServiceScan:
             res = subprocess.run(
                 ["rpcinfo", "-p", f"{ip}"], capture_output=True, text=True
             )
-            strings = res.stdout.split("\n")
+            res_split = res.stdout.split("\n")
+
+            # Filter strings based on scan type
+            if scan_type == "T":
+                for string in res_split:
+                    if "tcp" in string:
+                        strings.append(string)
+            elif scan_type == "U":
+                for string in res_split:
+                    if "udp" in string:
+                        strings.append(string)
 
             for string in strings:
                 # Filtering for nfs
@@ -967,7 +985,6 @@ class ServiceScan:
         imap_check,
         smb_check,
         mqtt_check,
-        nfs_check,
         # SSL protocols
         ftps_check,
         https_check,

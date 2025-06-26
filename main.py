@@ -47,9 +47,9 @@ if __name__ == "__main__":
     print("Verifying protocols active on ports: ")
     service_scan = ServiceScan(ip)
     if port_scan.type == "TCP":
-        service_scan.test_scan(port_scan.open_ports, verbose)
+        service_scan.tcp_scan(port_scan.open_ports, verbose)
     else:
-        service_scan.test_scan(port_scan.open_ports, verbose)
+        service_scan.udp_scan(port_scan.open_ports, verbose)
     print(service_scan)
 
     # Testing all protocols
