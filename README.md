@@ -15,6 +15,7 @@ Currently supported protocols:
 - imap (imaps)
 - smb
 - mqtt (mqtts)
+- nfs
 - ssl/tls
 
 ## Installation
