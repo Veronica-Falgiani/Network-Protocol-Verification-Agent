@@ -24,7 +24,7 @@ The script has been tested for **python version 3.13**
 
 ### Required packages
 
-`nfs-utils` are required for the nfs scan to work. Install it with your preferred package manager.
+`nfs-utils` is required for the nfs scan to work. Install it with your preferred package manager.
 
 ### Required python packages
 
