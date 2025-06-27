@@ -9,7 +9,7 @@ from utils.terminal_colors import print_fail, print_warning
 def args_parse():
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="Agent for Advanced Network Protocol Verification",
+        description="Agent for Advanced Network Protocol Verification. This program needs sudo privilege to run.",
         add_help=False,
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -28,7 +28,7 @@ def args_parse():
     parser.add_argument(
         "-ps",
         "--port_scan",
-        help="Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default, others need sudo permissions)",
+        help="Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default)",
     )
     parser.add_argument(
         "ports",

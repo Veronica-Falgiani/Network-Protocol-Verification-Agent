@@ -42,10 +42,10 @@ The program needs **sudo** privileges to scan and execute the test
 ```
 usage: main.py [-h] [-v] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
 
-Agent for Advanced Network Protocol Verification
+Agent for Advanced Network Protocol Verification. This program needs sudo privilege to run.
 
 positional arguments:
-  ports                 Single port [x], all ports [all], multiple ports [x,y,z] or port range [x:y] to scan
+  ports                 Single port [x], multiple ports [x,y,z],  port range [x:y] to scan or all ports [all]
   host                  Host to scan using ipv4 address
 
 options:
@@ -54,7 +54,7 @@ options:
   -hs, --host_scan HOST_SCAN
                         Host scan to execute: [p]ing, [s]yn, [a]ck, [u]dp (ping scan will be used by default)
   -ps, --port_scan PORT_SCAN
-                        Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default, others need sudo permissions)
+                        Port scan to execute: [c]onnect, [s]yn, [f]in, [n]ull, [x]mas, [u]dp (connect scan will be used by default)
 ```
 
 ### Results
