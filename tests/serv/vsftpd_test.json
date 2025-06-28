@@ -3,6 +3,7 @@
   "login": {},
   "auth_misconfigs": {},
   "vuln_serv_version": {
-    "2.3.4": "https://www.cve.org/CVERecord?id=CVE-2011-2523"
+    "2.3.4": ["https://www.cve.org/CVERecord?id=CVE-2011-2523"],
+    "3.0.2": ["https://www.cve.org/CVERecord?id=CVE-2015-1419"]
   }
 }

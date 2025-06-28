@@ -31,5 +31,7 @@
   },
   "login": {},
   "auth_misconfigs": {},
-  "serv_names": {}
+  "serv_names": [
+    "apache"
+  ]
 }
