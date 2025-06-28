@@ -74,6 +74,8 @@ class ExecuteTests:
 
                     # If auth_misconfigs has tests, asks the user for login info and inserts the correct login messages in a list
                     if auth_misconfigs:
+                        print("\n--- Asking for protocols credentials ---")
+
                         login_list = self.try_login(prot, port, service, login)
 
                         # Start testing for misconfigurations
@@ -138,6 +140,10 @@ class ExecuteTests:
 
                                     # If auth_misconfigs has tests, asks the user for login info and inserts the correct login messages in a list
                                     if auth_misconfigs:
+                                        print(
+                                            "\n--- Asking for services credentials ---"
+                                        )
+
                                         login_list = self.try_login(
                                             prot, port, service, login
                                         )
@@ -193,7 +199,7 @@ class ExecuteTests:
             # Complex ssl/tls test: establishes a connection and then sends a message and compares results
             if "SSL" in prot:
                 vuln = self.test_ssl(name, info, self.ip, port, service, login_list)
-                self.check_ssltls(service, results)
+                self.check_tls(service, results)
 
             # Complex test: sends a message and compares the results
             elif "recv" in info or "not_recv" in info:

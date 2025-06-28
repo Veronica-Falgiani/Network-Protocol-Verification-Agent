@@ -1,5 +1,5 @@
 import sys
-from utils.terminal_colors import print_fail, print_ok, verbose_print
+from utils.terminal_colors import print_fail, verbose_print
 from scapy.all import *
 
 # Ports used for syn and ack scan

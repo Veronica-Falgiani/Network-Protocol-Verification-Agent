@@ -82,7 +82,7 @@ class PortScan:
 
     # Send: SYN
     # Rec:  SYN/ACK -> RST -> open
-    #       RST -> closed
+    #       RST ->  closed
     #       no response/ICMP unreachable -> filtered
     def tcp_syn_scan(self, ports_list: list, verbose: bool):
         self.type = "TCP"

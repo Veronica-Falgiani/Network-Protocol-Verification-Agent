@@ -87,12 +87,23 @@ def html_result(report: Results):
                 </div>
             """
         else:
-            html_version = f"""
+            html_version = """
                 <div class='my-3'>
                     <hr>
                     <h4 style="text-align:center"> SERVICE VERSION </h4>
                     <p>This service version is vulnerable, an update is mandatory!</p>
-                    <p>Reference CVE: <a href="{result.unsafe_ver_cve}" target="_blank">{result.unsafe_ver_cve[-13:]}</a></p>
+                    <p>Reference CVE:<p>
+                    <ul>
+                """
+
+            for cve in result.unsafe_ver_cve:
+                cve_number = cve.split("?id=")[1]
+                html_version += f"""
+                    <li><a href="{cve}" target="_blank">{cve_number}</a></li>
+                """
+
+            html_version += """
+                </ul>
                 </div>
             """
 
@@ -284,7 +295,7 @@ def html_result(report: Results):
             or result.unsafe_ver
         ):
             html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
+                <button class=" nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
             """
         else:
             html_pills += f""" 

@@ -4,7 +4,7 @@
 import os
 import sys
 from utils.parser import args_parse, ip_parse, port_parse
-from utils.terminal_colors import print_ok, print_fail
+from utils.terminal_colors import print_ok, print_fail, print_cmd
 from agent.host_scan import host_scan
 from agent.port_scan import PortScan
 from agent.service_scan import ServiceScan
@@ -16,6 +16,7 @@ if __name__ == "__main__":
         print_fail("This program requires sudo privileges")
         sys.exit()
 
+    # Get arguments from cmd line
     args = args_parse()
 
     host_arg = args.host_scan
@@ -29,36 +30,37 @@ if __name__ == "__main__":
     ports_list = port_parse(ports_str)
 
     # Host scan
-    print("\nVerifying that the host is up: ")
+    print("--- Verifying that the host is up ---")
     if host_scan(host_arg, ip, verbose):
-        print_ok("Host is up")
+        if verbose:
+            print_ok("Host is up\n")
     else:
-        print_fail("Host is down")
+        if verbose:
+            print_fail("Host is down\n")
         sys.exit()
 
     # Port scan
-    print("\nStarting port scan: ")
+    print("--- Starting port scan ---")
     port_scan = PortScan(ip)
     port_scan.port_scan(port_arg, ports_list, verbose)
     port_scan.get_open_ports()
-    print(port_scan)
+    print_cmd(port_scan, verbose)
 
     # Protocol - Service scan
-    print("Verifying protocols active on ports: ")
+    print("--- Verifying protocols active on ports ---")
     service_scan = ServiceScan(ip)
     if port_scan.type == "TCP":
         service_scan.tcp_scan(port_scan.open_ports, verbose)
     else:
         service_scan.udp_scan(port_scan.open_ports, verbose)
-    print(service_scan)
+    print_cmd(service_scan, verbose)
 
     # Testing all protocols
-    print("Asking for credentials:")
+    print("--- Testing protocols and services ---")
     report = ExecuteTests(ip)
     report.execute_tests(service_scan.services, verbose)
-    print("\nTesting protocols found: ")
-    if verbose:
-        print(report)
+    print("\n------------- RESULTS -------------")
+    print(report)
 
     # Write to file results
     write_result(report)

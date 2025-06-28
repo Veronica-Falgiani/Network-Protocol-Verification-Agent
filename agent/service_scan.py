@@ -94,7 +94,7 @@ class ServiceScan:
                 ftp.connect(host=ip, port=port, timeout=3)
                 ftp.quit()
 
-                # smtp also responds to this, so we need to verify the banner ?
+                # smtp also responds to this, so we need to verify the banner
                 s = socket.socket()
                 s.connect((ip, port))
                 banner = s.recv(1024)
@@ -261,7 +261,7 @@ class ServiceScan:
                 smtp.ehlo()
                 smtp.quit()
 
-                # ftp also responds to this, so we need to verify the banner ?
+                # ftp also responds to this, so we need to verify the banner
                 s = socket.socket()
                 s.connect((ip, port))
 
@@ -305,7 +305,7 @@ class ServiceScan:
                 smtps.ehlo()
                 smtps.quit()
 
-                # smtp also responds to this, so we need to verify the banner ?
+                # smtp also responds to this, so we need to verify the banner
                 sock = socket.create_connection((ip, port), timeout=3)
                 ssock = ServiceScan.context.wrap_socket(sock, server_hostname=ip)
                 ssl_version = ssock.version()

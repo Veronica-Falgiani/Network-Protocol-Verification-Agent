@@ -10,7 +10,7 @@ class Results:
         self.vuln_misconfigs = []
         self.vuln_auth_misconfigs = []
         self.unsafe_ver = False
-        self.unsafe_ver_cve = ""
+        self.unsafe_ver_cve = []
         self.unsafe_tls = False
         self.prot_auth = False
         self.serv_auth = False

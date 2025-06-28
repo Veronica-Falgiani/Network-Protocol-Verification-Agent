@@ -28,3 +28,8 @@ def print_fail(string: str):
 # Cyan print
 def verbose_print(string: str):
     print(bcolors.OKCYAN + string + bcolors.ENDC, end="\r")
+
+
+def print_cmd(string, verbose):
+    if verbose:
+        print(string)
