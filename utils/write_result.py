@@ -31,7 +31,7 @@ def log_result(report):
     file_log = RES_DIR + f"{report.ip}_results.log"
 
     with open(file_log, "w") as res_file:
-        res_file.write(f"##### RESULTS  FOR {report.ip} #####\n\n")
+        res_file.write(f"##### RESULTS FOR {report.ip} #####\n\n")
         res_file.write("PORT \t PROTOCOL \t SERVICE\n")
         res_file.write("----------------------------\n\n\n")
 
@@ -73,7 +73,7 @@ def html_result(report: Results):
 
         # Protocol name and service version
         html_title = f"""
-            <div id={result.prot} class="tab-pane fade">
+            <div id={result.prot}-{result.port} class="tab-pane fade">
                 <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
         """
 
@@ -91,7 +91,7 @@ def html_result(report: Results):
                 <div class='my-3'>
                     <hr>
                     <h4 style="text-align:center"> SERVICE VERSION </h4>
-                    <p>This service version is vulnerable, an update is mandatory!</p>
+                    <p><b>This service version is vulnerable, an update is mandatory!</b></p>
                     <p>Reference CVE:<p>
                     <ul>
                 """
@@ -109,13 +109,22 @@ def html_result(report: Results):
 
         # Result for checking TLS version
         if "SSL" in result.service or "TLS" in result.service:
-            html_tls = f"""
-                <div class='my-3'>
-                    <hr>
-                    <h4 style="text-align:center"> SSL/TLS PROTOCOL VERSION </h4>
-                    <p>SSL/TLS protocol vulnerable: {result.unsafe_tls}</p>
-                </div>
-            """
+            if result.unsafe_tls:
+                html_tls = """
+                    <div class='my-3'>
+                        <hr>
+                        <h4 style="text-align:center"> SSL/TLS PROTOCOL VERSION </h4>
+                        <p>The SSL/TLS version used is still supported</p>
+                    </div>
+                """
+            else:
+                html_tls = """
+                    <div class='my-3'>
+                        <hr>
+                        <h4 style="text-align:center"> SSL/TLS PROTOCOL VERSION </h4>
+                        <p><b>The SSL/TLS version used is deprecated!</b></p>
+                    </div>
+                """
 
         # Checks if there are misconfigs to print
         if (result.serv_max_misconfigs + result.prot_max_misconfigs) == 0:
@@ -143,7 +152,7 @@ def html_result(report: Results):
                 <div class='my-3'>
                     <hr>
                     <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
-                    <img src="img/{result.prot}.png" width="400">
+                    <img src="img/{result.prot}-{result.port}.png" width="400">
                     <ul>
             """
 
@@ -229,7 +238,7 @@ def html_result(report: Results):
                 <div id={result.prot}>
                     <hr>
                     <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
-                    <img src="img/{result.prot}auth.png" width="400">
+                    <img src="img/{result.prot}-{result.port}auth.png" width="400">
                     <ul>
             """
 
@@ -287,7 +296,7 @@ def html_result(report: Results):
             and not result.unsafe_ver
         ):
             html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}"><del>{result.prot}</del></button></li>
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}-{result.port}"><del>{result.prot}-{result.port}</del></button></li>
             """
         elif (
             len(result.vuln_misconfigs) != 0
@@ -295,11 +304,11 @@ def html_result(report: Results):
             or result.unsafe_ver
         ):
             html_pills += f""" 
-                <button class=" nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:red"><b>{result.prot}</b></button></li>
+                <button class=" nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}-{result.port}" style="color:red"><b>{result.prot}-{result.port}</b></button></li>
             """
         else:
             html_pills += f""" 
-                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}" style="color:green"><b>{result.prot}</b></button></li>
+                <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}-{result.port}" style="color:green"><b>{result.prot}-{result.port}</b></button></li>
             """
 
         html_protocols += (
@@ -363,5 +372,7 @@ def draw_graph(severity_html: dict, result: Results, max_vulns: int, type: str):
         elif label_txt == "ok" and severity_html["ok"] == 0:
             label.set_text("")
 
-    plt.savefig(f"{RES_DIR}/img/{result.prot}{type}.png", transparent=True)
+    plt.savefig(
+        f"{RES_DIR}/img/{result.prot}-{result.port}{type}.png", transparent=True
+    )
     plt.clf()

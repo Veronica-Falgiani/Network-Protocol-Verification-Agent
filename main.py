@@ -30,7 +30,7 @@ if __name__ == "__main__":
     ports_list = port_parse(ports_str)
 
     # Host scan
-    print("--- Verifying that the host is up ---")
+    print("--- Checking host ---")
     if host_scan(host_arg, ip, verbose):
         if verbose:
             print_ok("Host is up\n")
@@ -40,14 +40,14 @@ if __name__ == "__main__":
         sys.exit()
 
     # Port scan
-    print("--- Starting port scan ---")
+    print("--- Checking ports ---")
     port_scan = PortScan(ip)
     port_scan.port_scan(port_arg, ports_list, verbose)
     port_scan.get_open_ports()
     print_cmd(port_scan, verbose)
 
     # Protocol - Service scan
-    print("--- Verifying protocols active on ports ---")
+    print("--- Checking protocols and services ---")
     service_scan = ServiceScan(ip)
     if port_scan.type == "TCP":
         service_scan.tcp_scan(port_scan.open_ports, verbose)

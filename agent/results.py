@@ -34,7 +34,7 @@ class Results:
             if self.unsafe_tls:
                 string += "|\\___ THE SERVICE USES A DEPRECATED SSL/TLS PROTOCOL! \n|\n"
             else:
-                string += "|\\___ The service uses the current SSL/TLS protocol  \n|\n"
+                string += "|\\___ The service uses the currently supported SSL/TLS protocol  \n|\n"
 
         # Print all the information about the tests
         string += "| --------------- MISCONFIGURATIONS ---------------\n"
