@@ -5,6 +5,12 @@
       "send": "\n~~USER anonymous\n~~PASS\n",
       "recv": "230",
       "severity": "high"
+    },
+    "CVE-2010-1938": {
+      "description": "Allows remote attackers to cause a denial of service (daemon crash) or possibly execute arbitrary code via a long username.",
+      "send": "\n~~user AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "not_recv": "331 Please specify the password",
+      "severity": "high"
     }
   },
   "login": {
