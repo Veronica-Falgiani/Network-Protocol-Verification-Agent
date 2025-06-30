@@ -1,5 +1,12 @@
 {
-  "misconfigs": {},
+  "misconfigs": {
+    "BACKDOOR COMMAND EXECUTION": {
+      "description": "Allows users to leverage a backdoor to make a command execution.",
+      "send": "\n~~USER X:)\n~~PASS X\n~~id\n",
+      "not_recv": "530",
+      "severity": "high"
+    }
+  },
   "login": {},
   "auth_misconfigs": {},
   "vuln_serv_version": {

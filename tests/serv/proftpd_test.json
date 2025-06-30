@@ -1,0 +1,18 @@
+{
+  "misconfigs": {
+  },
+  "login": {
+    "send_str": "\n~~USER _username_\n~~PASS _password_\n",
+    "recv_str": "230 Login successful."
+  },
+  "auth_misconfigs": {
+    "BACKDOOR COMMAND EXECUTION": {
+      "description": "Allows users to leverage a backdoor to make a command execution.",
+      "send": "HELP ACIDBITCHEZ\n~~id\n",
+      "not_recv": "502",
+      "severity": "high"
+    }
+  },
+  "vuln_serv_version": {
+  }
+}
