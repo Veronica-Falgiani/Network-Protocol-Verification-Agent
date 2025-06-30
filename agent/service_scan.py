@@ -223,7 +223,7 @@ class ServiceScan:
 
             try:
                 telnet = Telnet(ip, port, timeout=3)
-                res = telnet.read_until(b"login:", timeout=3)
+                res = telnet.read_until(b"login: ", timeout=15)
 
                 if "login:" in str(res):
                     rem_ports.append(port)

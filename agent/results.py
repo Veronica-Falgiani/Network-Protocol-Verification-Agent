@@ -24,7 +24,12 @@ class Results:
             string += (
                 "|\\___ THIS SERVICE VERSION IS VULNERABLE AND NEEDS TO BE UPDATED!\n"
             )
-            string += f"|     reference: {self.unsafe_ver_cve}\n|\n"
+            string += "|     reference:\n"
+            for cve in self.unsafe_ver_cve:
+                cve_number = cve.split("?id=")[1]
+                string += f"|     - {cve_number}: {cve}\n"
+
+            string += "|\n"
         else:
             string += "|\\___ The service version is not vulnerable.\n|\n"
 
