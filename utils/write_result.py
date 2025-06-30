@@ -52,8 +52,9 @@ def json_result(report):
 
         for result in report.report:
             res_dict["services"].append(result.__json__())
+        print(res_dict)
 
-        json.dump(repr(res_dict), res_file, indent=4)
+        json.dump(res_dict, res_file, indent=4)
 
 
 # Creates a html page with results and graphs
@@ -77,7 +78,7 @@ def html_result(report: Results):
                 <h3><b>Port {result.port} - {result.prot} - {result.service}</b></h3>
         """
 
-        # Result for checking service version
+        # Result after checking service version
         if not result.unsafe_ver:
             html_version = """
                 <div class='my-3'>
