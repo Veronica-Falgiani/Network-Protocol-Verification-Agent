@@ -1,6 +1,7 @@
 import argparse
 import sys
 import socket
+import re
 from utils.terminal_colors import print_fail, print_warning
 
 # python3 main.py -hs p -ps s 100:200 192.168.0.1
@@ -43,11 +44,13 @@ def args_parse():
 
 # Parses ip from user input
 def ip_parse(ip: str):
+    regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+
     if ip == "localhost":
         ip = "127.0.0.1"
-    try:
-        socket.inet_aton(ip)
-    except socket.error:
+    if re.search(regex, ip):
+        return
+    else:
         print_fail("IP not valid!")
         sys.exit()
 

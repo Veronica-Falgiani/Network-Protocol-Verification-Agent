@@ -974,6 +974,7 @@ class ServiceScan:
         for port in rem_ports:
             open_ports.remove(port)
 
+    # List of protocol scans to use
     tcp_check = [
         ftp_check,
         ssh_check,

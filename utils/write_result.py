@@ -52,7 +52,6 @@ def json_result(report):
 
         for result in report.report:
             res_dict["services"].append(result.__json__())
-        print(res_dict)
 
         json.dump(res_dict, res_file, indent=4)
 

@@ -21,7 +21,7 @@ def host_scan(host_arg: str, ip: str, verbose: bool):
         case "u":
             res_status = udp_scan(ip)
         case None:
-            res_status = tcp_syn_scan(ip)
+            res_status = ping_scan(ip)
         case _:
             print_fail("Cannot find host scan type")
             sys.exit()
