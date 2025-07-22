@@ -4,6 +4,7 @@ import socket
 import ssl
 import certifi
 import getpass
+import re
 from utils.terminal_colors import verbose_print
 from agent.results import Results
 
@@ -250,9 +251,9 @@ class ExecuteTests:
             # Compares the received message to the one in the json
             if (
                 recv is not None
-                and recv in res.decode()
+                and re.search(recv, res.decode())
                 or not_recv is not None
-                and not_recv not in res.decode()
+                and not re.search(not_recv, res.decode())
             ):
                 vuln = {}
                 vuln["name"] = name
@@ -358,7 +359,7 @@ class ExecuteTests:
                 res = sock.recv(1024)
 
             # Checks the response of the server
-            if login["recv_str"] in res.decode():
+            if re.search(login["recv_str"], res.decode()):
                 sock.close()
                 return login_list
             else:
