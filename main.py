@@ -24,6 +24,7 @@ if __name__ == "__main__":
     ip = args.host
     ports_str = args.ports
     verbose = args.verbose
+    no_tests = args.no_tests
 
     # Verify that user input is correct
     ip_parse(ip)
@@ -53,7 +54,13 @@ if __name__ == "__main__":
         service_scan.tcp_scan(port_scan.open_ports, verbose)
     else:
         service_scan.udp_scan(port_scan.open_ports, verbose)
-    print_cmd(service_scan, verbose)
+    if not no_tests:
+        print_cmd(service_scan, verbose)
+
+    # If the user has requested a simple scan, prints the results and interrupts the execution
+    if no_tests:
+        print(service_scan)
+        sys.exit()
 
     # Testing all protocols
     print("--- Testing protocols and services ---")

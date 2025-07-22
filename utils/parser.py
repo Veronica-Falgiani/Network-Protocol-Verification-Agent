@@ -10,7 +10,7 @@ from utils.terminal_colors import print_fail, print_warning
 def args_parse():
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="Agent for Advanced Network Protocol Verification. This program needs sudo privilege to run.",
+        description="Agent for Advanced Network Protocol Verification. This program needs sudo privileges to run.",
         add_help=False,
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -19,7 +19,13 @@ def args_parse():
         "-h", "--help", action="help", help="Show this help message and exit"
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Increasse output verbosity"
+        "-v", "--verbose", action="store_true", help="Increase output verbosity"
+    )
+    parser.add_argument(
+        "-nt",
+        "--no_tests",
+        action="store_true",
+        help="Scans the target for services but doesn't execute a vulnerability scan",
     )
     parser.add_argument(
         "-hs",

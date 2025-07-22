@@ -23,13 +23,13 @@
       "severity": "high"
     },
     "NO SECURE FLAG IN COOKIE": {
-      "description": "We can use arbitrary headers to access the website",
+      "description": "Using cookies and not setting the Secure parameter can be a major security vulnerability",
       "send": "GET / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
       "not_recv": "Secure",
       "severity": "medium"
     },
     "NO HTTPONLY FLAG IN COOKIE": {
-      "description": "We can use arbitrary headers to access the website",
+      "description": "If a cookies is used and not setting the HttpOnly parameter can be a major security vulnerability",
       "send": "GET / HTTP/1.1\r\nHost: host:port\r\nConnection: close\r\n\r\n",
       "recv": "HttpOnly",
       "severity": "medium"

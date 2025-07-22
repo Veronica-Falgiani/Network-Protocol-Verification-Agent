@@ -40,9 +40,9 @@ pip install -r requirements.txt
 The program needs **sudo** privileges to scan and execute the test
 
 ```
-usage: main.py [-h] [-v] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
+usage: main.py [-h] [-v] [-nt] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
 
-Agent for Advanced Network Protocol Verification. This program needs sudo privilege to run.
+Agent for Advanced Network Protocol Verification. This program needs sudo privileges to run.
 
 positional arguments:
   ports                 Single port [x], multiple ports [x,y,z],  port range [x:y] to scan or all ports [all]
@@ -50,7 +50,8 @@ positional arguments:
 
 options:
   -h, --help            Show this help message and exit
-  -v, --verbose         Increasse output verbosity
+  -v, --verbose         Increase output verbosity
+  -nt, --no_tests       Scans the target for services but doesn't execute a vulnerability scan
   -hs, --host_scan HOST_SCAN
                         Host scan to execute: [p]ing, [s]yn, [a]ck, [u]dp (ping scan will be used by default)
   -ps, --port_scan PORT_SCAN

@@ -8,7 +8,7 @@
   "auth_misconfigs": {
     "BACKDOOR COMMAND EXECUTION": {
       "description": "Allows users to leverage a backdoor to make a command execution.",
-      "send": "HELP ACIDBITCHEZ\n~~id\n",
+      "send": "HELP AAAAAAAAAAA\n~~id\n",
       "not_recv": "502",
       "severity": "high"
     }

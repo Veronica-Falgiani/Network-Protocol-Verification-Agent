@@ -1,5 +1,17 @@
 {
   "misconfigs": {
+    "NORMALIZE PATH": {
+      "description": "If CGI has been enabled and files outside of the document root are nto protected by 'require all denied', the service is vulnerable to RCE",
+      "send": "RAND /cgi-bin HTTP/1.1\r\nHost: host:port\r\n\r\nasd=|echo;echo 'abcdefg'",
+      "recv": "abcdefg",
+      "severity": "high"
+    },
+    "OPTIONSBLEED": {
+      "description": "The Allow response header returned from an OPTIONS request may bleed memory if the server has a .htaccess file with an invalid Limit method defined",
+      "send": "ANY / HTTP/1.1\r\nHost: host:port\r\n\r\n",
+      "recv": "HEAD,,HEAD",
+      "severity": "high"
+    }
   },
   "login": {},
   "auth_misconfigs": {},
