@@ -62,34 +62,36 @@ options:
 
 Results can be viewed in the `res/` directory.
 
+There are three types of files:
+- .log: human readable text file
+- .json: json file that can be processed by other programs
+- .html: easy to navigate results with graphs
+
 ## Modifying and creating tests
 
-Tests are written in __json__ format and need to be inserted into the `tests/` folder.
+Tests are written in __json__ and there are two types: one for the protocols (inside `tests/prot` folder) and one for the services (inside `tests/serv` folder)
 
-The base template for the script needs to contain the following things in order to work:
+### Tests for protocols
+
+The base template for the json must have these items in order to work:
 ```
 {
-  "misconfigs": {
-  },
+  "misconfigs": {},
   "login": "",
-  "auth_misconfigs": {
-  },
-  "vuln_services": {
-  }
+  "auth_misconfigs": {},
+  "serv_names": []
 }
 ```
 
-To populate the fields you need to write what you want like this:
-
-### misconfigs/auth_misconfigs
+#### misconfigs/auth_misconfigs
 
 You can concatenate one or more tests inside misconfigs and auth_misconfigs.
 
 **Check if a vulnerable port is open:**
 ```
 "IS OPEN": {
-  "description": "",
-  "severity": ""
+  "description": "Telnet is an old network protocol that provides insecure access to computers over a network. Due to security vulnerabilities, its usage is not recommended, and more secure alternatives like SSH are preferred.",
+  "severity": "high"
 }
 ```
 
@@ -98,46 +100,67 @@ You can concatenate one or more tests inside misconfigs and auth_misconfigs.
 
 **Simple test sending and receiving commands:**
 ```
-"MISCONFIG NAME": {
-  "description": "",
-  "send": "",
-  "recv/not_recv": "",
-  "severity": ""
-}
+"ANONYMOUS LOGIN ENABLED" :{
+  "description": "Anonymous login is enabled, everyone can access the service",
+  "send": "\n~~USER anonymous\n~~PASS\n",
+  "recv": "230",
+  "severity": "high"
+},
 ```
 
-- MISCONFIG NAME: how you want to call the misconfiguration
 - description: why is the misconfiguration a vulnerability issue
 - send: the command to send. If you need to send more commands, separate them with `~~` (Ex. `\n~~USER anonymous\n~~PASS\n`)
 - recv or not_recv: specify the packets we receive/not receive to recognise if there is a vulnerability
 - severity: "low", "medium", "high"
 
-### login
+#### login
 
-The strings used to login into the service
+The strings used to login into the service.
 
 ```
-"login": "\n~~USER _username_\n~~PASS _password_\n"
+"login": {
+  "send_str": "\n~~USER _username_\n~~PASS _password_\n",
+  "recv_str": "230 Login successful."
+},
 ```
 
-- Separate more commands with the `~~` characters
-- Use `_username_` and `_password_` as placeholders for credentials 
+- send_str: the string that needs to be sent for login. Separate more than one command with the `~~` characters and use `_username_` and `_password_` as placeholders for credentials
+- recv_str: the string we recieve when the login is correct
 
-### vuln_services
+#### serv_names
 
-You need to specify the vulnerable version of the service based on the banners you receive from the server
-Services can be concatenated
+A list of all the service names that already have a test inside `tests/serv`
 
-Ex.
 ```
-"SERVICE NAME": {
-  "version": "https://www.cve.org/CVERecord?id=CVE-****-****",
-  "version": "https://www.cve.org/CVERecord?id=CVE-****-****"
+"serv_names": [
+  "vsftpd",
+  "proftpd"
+]
+```
+
+### Tests for services
+
+The base template for the json must have these items in order to work:
+```
+{
+  "misconfigs": {},
+  "login": {},
+  "auth_misconfigs": {},
+  "vuln_serv_version": {}
 }
 ```
 
-- SERVICE NAME: the name of the service given by the banner
-- version: the version of the service given by the banner (ex. "2.3.4")
-- cve link: the link to the CVE page of the vulnerable service version
+#### vuln_serv_version
+
+A list of service versions that are vulnerable and their respective CVEs.
+
+```
+  "vuln_serv_version": {
+    "2.2.8": ["https://www.cve.org/CVERecord?id=CVE-2008-2364", 
+      "https://www.cve.org/CVERecord?id=CVE-2022-40309"]
+  }
+```
+
 
 **For more examples, check the tests folder**
+
