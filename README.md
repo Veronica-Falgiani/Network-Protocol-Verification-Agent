@@ -95,6 +95,8 @@ The base template for the json must have these items in order to work:
 }
 ```
 
+---
+
 #### misconfigs/auth_misconfigs
 
 You can concatenate one or more tests inside misconfigs and auth_misconfigs.
@@ -125,6 +127,8 @@ You can concatenate one or more tests inside misconfigs and auth_misconfigs.
 - recv or not_recv: specify the packets we receive/not receive to recognise if there is a vulnerability
 - severity: "low", "medium", "high"
 
+---
+
 #### login
 
 The strings used to login into the service.
@@ -139,6 +143,8 @@ The strings used to login into the service.
 - send_str: the string that needs to be sent for login. Separate more than one command with the `~~` characters and use `_username_` and `_password_` as placeholders for credentials
 - recv_str: the string we recieve when the login is correct
 
+---
+
 #### serv_names
 
 A list of all the service names that have a test inside `tests/serv`
@@ -149,6 +155,8 @@ A list of all the service names that have a test inside `tests/serv`
   "proftpd"
 ]
 ```
+
+---
 
 #### vuln_serv_version
 
