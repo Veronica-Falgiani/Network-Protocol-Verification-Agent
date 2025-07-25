@@ -83,6 +83,18 @@ The base template for the json must have these items in order to work:
 }
 ```
 
+### Tests for services
+
+The base template for the json must have these items in order to work:
+```
+{
+  "misconfigs": {},
+  "login": {},
+  "auth_misconfigs": {},
+  "vuln_serv_version": {}
+}
+```
+
 #### misconfigs/auth_misconfigs
 
 You can concatenate one or more tests inside misconfigs and auth_misconfigs.
@@ -129,25 +141,13 @@ The strings used to login into the service.
 
 #### serv_names
 
-A list of all the service names that already have a test inside `tests/serv`
+A list of all the service names that have a test inside `tests/serv`
 
 ```
 "serv_names": [
   "vsftpd",
   "proftpd"
 ]
-```
-
-### Tests for services
-
-The base template for the json must have these items in order to work:
-```
-{
-  "misconfigs": {},
-  "login": {},
-  "auth_misconfigs": {},
-  "vuln_serv_version": {}
-}
 ```
 
 #### vuln_serv_version
@@ -161,6 +161,4 @@ A list of service versions that are vulnerable and their respective CVEs.
   }
 ```
 
-
 **For more examples, check the tests folder**
-
