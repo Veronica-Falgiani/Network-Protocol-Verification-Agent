@@ -324,7 +324,7 @@ class ExecuteTests:
                 results.unsafe_ver_cve = cve
 
     def check_tls(self, service: str, results: Results):
-        if "TLSv1.3" not in service and "TLSv1.2" not in service:
+        if not ("TLSv1.3" in service or "TLSv1.2" in service):
             results.unsafe_tls = True
 
     def try_login(self, prot, port, service, login) -> list:
