@@ -767,8 +767,6 @@ class ServiceScan:
 
         for port in open_ports:
             service = {}
-            ip = "https://test.mosquitto.org/"
-            port = 1883
 
             if verbose:
                 print("\033[K", end="\r")
@@ -804,10 +802,8 @@ class ServiceScan:
                 client.subscribe("A")
                 client.loop(2)
 
-                break
-
             except Exception as e:
-                pass
+                print(e)
 
         for port in rem_ports:
             open_ports.remove(port)
@@ -821,8 +817,6 @@ class ServiceScan:
 
         for port in open_ports:
             service = {}
-            ip = "https://test.mosquitto.org/"
-            port = 8883
 
             if verbose:
                 print("\033[K", end="\r")
@@ -860,8 +854,6 @@ class ServiceScan:
 
                 client.subscribe("A")
                 client.loop(2)
-
-                break
 
             except Exception as e:
                 pass
