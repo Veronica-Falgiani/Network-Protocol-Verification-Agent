@@ -114,7 +114,7 @@ def html_result(report: Results):
                     <div class='my-3'>
                         <hr>
                         <h4 style="text-align:center"> SSL/TLS PROTOCOL VERSION </h4>
-                        <p>The SSL/TLS version used is still supported</p>
+                        <p><b>The SSL/TLS version used is deprecated!</b></p>
                     </div>
                 """
             else:
@@ -122,9 +122,11 @@ def html_result(report: Results):
                     <div class='my-3'>
                         <hr>
                         <h4 style="text-align:center"> SSL/TLS PROTOCOL VERSION </h4>
-                        <p><b>The SSL/TLS version used is deprecated!</b></p>
+                        <p>The SSL/TLS version used is still supported</p>
                     </div>
                 """
+
+                
 
         # Checks if there are misconfigs to print
         if (result.serv_max_misconfigs + result.prot_max_misconfigs) == 0:

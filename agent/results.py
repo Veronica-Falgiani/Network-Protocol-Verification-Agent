@@ -83,6 +83,12 @@ class Results:
             "auth_misconfigurations": self.vuln_auth_misconfigs,
         }
 
+        if "SSL" in self.service or "TLS" in self.service:
+            position = list(repr.keys()).index('misconfigurations')
+            items = list(repr.items())
+            items.insert(position, ("unsafe_tls", self.unsafe_tls))
+            repr = dict(items)
+
         return repr
 
     def add_prot_max(self, prot_max_misconfigs: int, prot_max_auth_misconfigs: int):
