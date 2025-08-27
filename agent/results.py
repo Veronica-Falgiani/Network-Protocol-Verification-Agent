@@ -46,7 +46,7 @@ class Results:
         if (self.prot_max_vulns + self.serv_max_vulns) == 0:
             string += "|\\___ No tests found for this protocol\n"
         elif len(self.found_vulns) == 0:
-            string += "|\\___ The protocol has been tested and no misconfigurations have been found\n"
+            string += "|\\___ The protocol has been tested and no vulnearbilities have been found\n"
         else:
             for vuln in self.found_vulns:
                 string += f"|\\___ {vuln['name']}\n"
@@ -61,7 +61,7 @@ class Results:
         elif not self.prot_auth and not self.serv_auth:
             string += "|\\___ No credentials were given\n"
         elif len(self.found_auth_vulns) == 0:
-            string += "|\\___ The protocol has been tested and no misconfigurations have been found\n"
+            string += "|\\___ The protocol has been tested and no vulnerabilities have been found\n"
         else:
             for vuln in self.found_auth_vulns:
                 string += f"|\\___ {vuln['name']}\n"
@@ -79,8 +79,8 @@ class Results:
             "service": self.service,
             "unsafe_version": self.unsafe_ver,
             "unsafe_version_cve": self.unsafe_ver_cve,
-            "misconfigurations": self.found_vulns,
-            "auth_misconfigurations": self.found_auth_vulns,
+            "vulnerabilities": self.found_vulns,
+            "auth_vulnerabilities": self.found_auth_vulns,
         }
 
         if "SSL" in self.service or "TLS" in self.service:

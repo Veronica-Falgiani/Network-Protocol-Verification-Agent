@@ -201,7 +201,7 @@ def html_result(report: Results):
                 <div class='my-3'>
                     <hr>
                     <h4 style="text-align:center"> VULNERABILITIES </h4>
-                    <p class="my-3">The service has been tested and no VULNERABILITIES have been found</p>
+                    <p class="my-3">The service has been tested and no vulnerabilities have been found</p>
                 </div>
             """
 
@@ -287,7 +287,7 @@ def html_result(report: Results):
                 <div class='my-3'>
                     <hr>
                     <h4 style="text-align:center"> AUTHENTICATED VULNERABILITIES </h4>
-                    <p class="my-3">The service has been tested and no VULNERABILITIES have been found</p>
+                    <p class="my-3">The service has been tested and no vulnerabilities have been found</p>
                 </div>
             """
 
