@@ -68,8 +68,8 @@ def html_result(report: Results):
     for result in report.report:
         html_version = ""
         html_tls = ""
-        html_misconfigs = ""
-        html_auth_misconfigs = ""
+        html_vulns = ""
+        html_auth_vulns = ""
 
         # Protocol name and service version
         html_title = f"""
@@ -128,18 +128,18 @@ def html_result(report: Results):
 
                 
 
-        # Checks if there are misconfigs to print
-        if (result.serv_max_misconfigs + result.prot_max_misconfigs) == 0:
-            html_misconfigs += """
+        # Checks if there are vulns to print
+        if (result.serv_max_vulns + result.prot_max_vulns) == 0:
+            html_vulns += """
                 <div class='my-3'>
                     <hr>
-                    <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
+                    <h4 style="text-align:center"> VULNERABILITIES </h4>
                     <p class="my-3">No tests found for the protocol</p>
                 </div>
             """
 
-        # Checks if the protocol has misconfigs or not
-        elif len(result.vuln_misconfigs) != 0:
+        # Checks if the protocol has vulns or not
+        elif len(result.found_vulns) != 0:
             severity_html = {
                 "high": 0,
                 "high_results": "",
@@ -150,15 +150,15 @@ def html_result(report: Results):
                 "ok": 0,
             }
 
-            html_misconfigs += f"""
+            html_vulns += f"""
                 <div class='my-3'>
                     <hr>
-                    <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
+                    <h4 style="text-align:center"> VULNERABILITIES </h4>
                     <img src="img/{result.prot}-{result.port}.png" width="400">
                     <ul>
             """
 
-            for vuln in result.vuln_misconfigs:
+            for vuln in result.found_vulns:
                 match vuln["severity"]:
                     case "high":
                         severity_html["high"] += 1
@@ -178,7 +178,7 @@ def html_result(report: Results):
                             <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
                         """
 
-            html_misconfigs += (
+            html_vulns += (
                 f"<li style='color:#EC6B56'><h5><b> HIGH: {severity_html['high']} </b></h5></li>"
                 + f"<ul class='mb-4'> {severity_html['high_results']}</ul>"
                 + f"<li style='color:#FFC154'><h5><b> MEDIUM: {severity_html['medium']} </b></h5></li>"
@@ -191,41 +191,41 @@ def html_result(report: Results):
             draw_graph(
                 severity_html,
                 result,
-                (result.prot_max_misconfigs + result.serv_max_misconfigs),
+                (result.prot_max_vulns + result.serv_max_vulns),
                 "",
             )
 
-        # No misconfigs for the specified protocol
+        # No vulns for the specified protocol
         else:
-            html_misconfigs += """
+            html_vulns += """
                 <div class='my-3'>
                     <hr>
-                    <h4 style="text-align:center"> MISCONFIGURATIONS </h4>
-                    <p class="my-3">The service has been tested and no misconfigurations have been found</p>
+                    <h4 style="text-align:center"> VULNERABILITIES </h4>
+                    <p class="my-3">The service has been tested and no VULNERABILITIES have been found</p>
                 </div>
             """
 
-        # Checks if there are misconfigs to print
-        if (result.prot_max_auth_misconfigs + result.serv_max_auth_misconfigs) == 0:
-            html_auth_misconfigs += """
+        # Checks if there are vulns to print
+        if (result.prot_max_auth_vulns + result.serv_max_auth_vulns) == 0:
+            html_auth_vulns += """
                 <div class='my-3'>
                     <hr>
-                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <h4 style="text-align:center"> AUTHENTICATED VULNERABILITIES </h4>
                     <p class="my-3">No tests found for the protocol</p>
                 </div>
             """
 
         elif not result.prot_auth and not result.serv_auth:
-            html_auth_misconfigs += """
+            html_auth_vulns += """
                 <div class='my-3'>
                     <hr>
-                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <h4 style="text-align:center"> AUTHENTICATED VULNERABILITIES </h4>
                     <p class="my-3">No credentials were given</p>
                 </div>
             """
 
-        # Checks if the protocol has misconfigs or not
-        elif len(result.vuln_auth_misconfigs) != 0:
+        # Checks if the protocol has vulns or not
+        elif len(result.found_auth_vulns) != 0:
             severity_html = {
                 "high": 0,
                 "high_results": "",
@@ -236,15 +236,15 @@ def html_result(report: Results):
                 "ok": 0,
             }
 
-            html_auth_misconfigs += f"""
+            html_auth_vulns += f"""
                 <div id={result.prot}>
                     <hr>
-                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
+                    <h4 style="text-align:center"> AUTHENTICATED VULNERABILITIES </h4>
                     <img src="img/{result.prot}-{result.port}auth.png" width="400">
                     <ul>
             """
 
-            for vuln in result.vuln_auth_misconfigs:
+            for vuln in result.found_auth_vulns:
                 match vuln["severity"]:
                     case "high":
                         severity_html["high"] += 1
@@ -264,7 +264,7 @@ def html_result(report: Results):
                             <li class='my-3'><b> {vuln["name"]} </b><br> description: {vuln["description"]}</li> 
                         """
 
-            html_auth_misconfigs += (
+            html_auth_vulns += (
                 f"<li style='color:#EC6B56'><h5><b> HIGH: {severity_html['high']} </b></h5></li>"
                 + f"<ul class='mb-4'> {severity_html['high_results']}</ul>"
                 + f"<li style='color:#FFC154'><h5><b> MEDIUM: {severity_html['medium']} </b></h5></li>"
@@ -277,32 +277,32 @@ def html_result(report: Results):
             draw_graph(
                 severity_html,
                 result,
-                (result.prot_max_auth_misconfigs + result.serv_max_auth_misconfigs),
+                (result.prot_max_auth_vulns + result.serv_max_auth_vulns),
                 "auth",
             )
 
-        # No misconfigs for the specified protocol
+        # No vulns for the specified protocol
         else:
-            html_auth_misconfigs += """
+            html_auth_vulns += """
                 <div class='my-3'>
                     <hr>
-                    <h4 style="text-align:center"> AUTHENTICATED MISCONFIGURATIONS </h4>
-                    <p class="my-3">The service has been tested and no misconfigurations have been found</p>
+                    <h4 style="text-align:center"> AUTHENTICATED VULNERABILITIES </h4>
+                    <p class="my-3">The service has been tested and no VULNERABILITIES have been found</p>
                 </div>
             """
 
         # Adding buttons for protocols
         if (
-            (result.prot_max_misconfigs + result.serv_max_misconfigs) == 0
-            and (result.prot_max_auth_misconfigs + result.serv_max_auth_misconfigs) == 0
+            (result.prot_max_vulns + result.serv_max_vulns) == 0
+            and (result.prot_max_auth_vulns + result.serv_max_auth_vulns) == 0
             and not result.unsafe_ver
         ):
             html_pills += f""" 
                 <button class="nav-link" type="button" data-bs-toggle="pill" data-bs-target="#{result.prot}-{result.port}"><del>{result.prot}-{result.port}</del></button></li>
             """
         elif (
-            len(result.vuln_misconfigs) != 0
-            or len(result.vuln_auth_misconfigs) != 0
+            len(result.found_vulns) != 0
+            or len(result.found_auth_vulns) != 0
             or result.unsafe_ver
         ):
             html_pills += f""" 
@@ -317,8 +317,8 @@ def html_result(report: Results):
             html_title
             + html_version
             + html_tls
-            + html_misconfigs
-            + html_auth_misconfigs
+            + html_vulns
+            + html_auth_vulns
             + "</div>"
         )
 

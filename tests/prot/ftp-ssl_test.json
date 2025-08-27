@@ -1,5 +1,5 @@
 {
-  "misconfigs": {
+  "vulns": {
     "ANONYMOUS LOGIN ENABLED" :{
       "description": "Anonymous login is enabled, everyone can access the service",
       "send": "\n~~USER anonymous\n~~PASS\n",
@@ -17,7 +17,7 @@
     "send_str": "\n~~USER _username_\n~~PASS _password_\n",
     "recv_str": "230 Login successful."
   },
-  "auth_misconfigs": {
+  "auth_vulns": {
     "BOUNCE ATTACK": {
       "description": "If not correctly configured the PORT command can use the victim machine to request access to port indirectly. This can be used to scan hosts ports discretely.",
       "send": "PORT\n",

@@ -1,5 +1,5 @@
 {
-  "misconfigs": {
+  "vulns": {
     "NORMALIZE PATH": {
       "description": "If CGI has been enabled and files outside of the document root are nto protected by 'require all denied', the service is vulnerable to RCE",
       "send": "RAND /cgi-bin HTTP/1.1\r\nHost: host:port\r\n\r\nasd=|echo;echo 'abcdefg'",
@@ -14,7 +14,7 @@
     }
   },
   "login": {},
-  "auth_misconfigs": {},
+  "auth_vulns": {},
   "vuln_serv_version": {
     "2.2.8": ["https://www.cve.org/CVERecord?id=CVE-2008-2364", 
       "https://www.cve.org/CVERecord?id=CVE-2022-40309"]

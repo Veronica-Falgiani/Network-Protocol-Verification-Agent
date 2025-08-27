@@ -1,5 +1,5 @@
 {
-  "misconfigs": {
+  "vulns": {
     "IS OPEN" : {
       "description": "Using HTTP instead of HTTPS can be dangerous when exchanging sensitive data",
       "severity": "low"
@@ -42,7 +42,7 @@
     }
   },
   "login": {},
-  "auth_misconfigs": {},
+  "auth_vulns": {},
   "serv_names": [
     "apache"
   ]

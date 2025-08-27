@@ -1,11 +1,11 @@
 {
-  "misconfigs": {
+  "vulns": {
     "IS OPEN": {
       "description": "Telnet is an old network protocol that provides insecure access to computers over a network. Due to security vulnerabilities, its usage is not recommended, and more secure alternatives like SSH are preferred.",
       "severity": "high"
     }
   },
   "login": "",
-  "auth_misconfigs": {},
+  "auth_vulns": {},
   "serv_names": {} 
 }

@@ -43,29 +43,29 @@ class ExecuteTests:
             try:
                 with open(path_prot) as file:
                     test_file = json.load(file)
-                    misconfigs = test_file["misconfigs"]
+                    vulns = test_file["vulns"]
                     login = test_file["login"]
-                    auth_misconfigs = test_file["auth_misconfigs"]
+                    auth_vulns = test_file["auth_vulns"]
                     serv_names = test_file["serv_names"]
 
                     # Create class
                     results = Results(port, prot, service)
 
-                    prot_max_misconfigs = len(misconfigs)
+                    prot_max_vulns = len(vulns)
                     i_mis = 1
 
-                    prot_max_auth_misconfigs = len(auth_misconfigs)
+                    prot_max_auth_vulns = len(auth_vulns)
                     i_auth = 1
 
-                    results.add_prot_max(prot_max_misconfigs, prot_max_auth_misconfigs)
+                    results.add_prot_max(prot_max_vulns, prot_max_auth_vulns)
 
                     # Start testing for misconfigurations
                     auth = False
-                    self.check_misconfigs(
-                        misconfigs,
+                    self.check_vulns(
+                        vulns,
                         verbose,
                         i_mis,
-                        prot_max_misconfigs,
+                        prot_max_vulns,
                         port,
                         prot,
                         service,
@@ -73,8 +73,8 @@ class ExecuteTests:
                         auth,
                     )
 
-                    # If auth_misconfigs has tests, asks the user for login info and inserts the correct login messages in a list
-                    if auth_misconfigs:
+                    # If auth_vulns has tests, asks the user for login info and inserts the correct login messages in a list
+                    if auth_vulns:
                         print("\n--- Asking for protocols credentials ---")
 
                         login_list = self.try_login(prot, port, service, login)
@@ -83,11 +83,11 @@ class ExecuteTests:
                         if login_list:
                             results.prot_auth = True
                             auth = True
-                            self.check_misconfigs(
-                                auth_misconfigs,
+                            self.check_vulns(
+                                auth_vulns,
                                 verbose,
                                 i_auth,
-                                prot_max_auth_misconfigs,
+                                prot_max_auth_vulns,
                                 port,
                                 prot,
                                 service,
@@ -105,9 +105,9 @@ class ExecuteTests:
                             try:
                                 with open(path_prot) as file:
                                     test_file = json.load(file)
-                                    misconfigs = test_file["misconfigs"]
+                                    vulns = test_file["vulns"]
                                     login = test_file["login"]
-                                    auth_misconfigs = test_file["auth_misconfigs"]
+                                    auth_vulns = test_file["auth_vulns"]
                                     vuln_serv_version = test_file["vuln_serv_version"]
 
                                     # Check if the service is vulnerable by checking the banner
@@ -115,23 +115,23 @@ class ExecuteTests:
                                         service, vuln_serv_version, results
                                     )
 
-                                    serv_max_misconfigs = len(misconfigs)
+                                    serv_max_vulns = len(vulns)
                                     i_mis = 1
 
-                                    serv_max_auth_misconfigs = len(auth_misconfigs)
+                                    serv_max_auth_vulns = len(auth_vulns)
                                     i_auth = 1
 
                                     results.add_serv_max(
-                                        serv_max_misconfigs, serv_max_auth_misconfigs
+                                        serv_max_vulns, serv_max_auth_vulns
                                     )
 
                                     # Start testing for misconfigurations
                                     auth = False
-                                    self.check_misconfigs(
-                                        misconfigs,
+                                    self.check_vulns(
+                                        vulns,
                                         verbose,
                                         i_mis,
-                                        serv_max_misconfigs,
+                                        serv_max_vulns,
                                         port,
                                         prot,
                                         service,
@@ -139,8 +139,8 @@ class ExecuteTests:
                                         auth,
                                     )
 
-                                    # If auth_misconfigs has tests, asks the user for login info and inserts the correct login messages in a list
-                                    if auth_misconfigs:
+                                    # If auth_vulns has tests, asks the user for login info and inserts the correct login messages in a list
+                                    if auth_vulns:
                                         print(
                                             "\n--- Asking for services credentials ---"
                                         )
@@ -153,11 +153,11 @@ class ExecuteTests:
                                         if login_list:
                                             results.serv_auth = True
                                             auth = True
-                                            self.check_misconfigs(
-                                                auth_misconfigs,
+                                            self.check_vulns(
+                                                auth_vulns,
                                                 verbose,
                                                 i_auth,
-                                                serv_max_auth_misconfigs,
+                                                serv_max_auth_vulns,
                                                 port,
                                                 prot,
                                                 service,
@@ -174,12 +174,12 @@ class ExecuteTests:
 
             self.report.append(results)
 
-    def check_misconfigs(
+    def check_vulns(
         self,
-        misconfigs,
+        vulns,
         verbose,
         i_mis,
-        max_misconfigs,
+        max_vulns,
         port,
         prot,
         service,
@@ -187,13 +187,13 @@ class ExecuteTests:
         auth,
         login_list=[],
     ):
-        for name, info in misconfigs.items():
+        for name, info in vulns.items():
             vuln = {}
 
             if verbose:
                 print("\033[K", end="\r")
                 verbose_print(
-                    f"Scanning {port} with {prot} - {service} using {name} [{i_mis}/{max_misconfigs}]"
+                    f"Scanning {port} with {prot} - {service} using {name} [{i_mis}/{max_vulns}]"
                 )
                 i_mis += 1
 
@@ -214,9 +214,9 @@ class ExecuteTests:
                 vuln["severity"] = info["severity"]
 
             if vuln and auth:
-                results.set_auth_misconfigs(vuln)
+                results.set_auth_vulns(vuln)
             elif vuln and not auth:
-                results.set_misconfigs(vuln)
+                results.set_vulns(vuln)
 
             # Clean line
             print("\033[K", end="\r")

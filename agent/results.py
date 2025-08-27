@@ -3,12 +3,12 @@ class Results:
         self.port = port
         self.prot = prot
         self.service = service
-        self.prot_max_misconfigs = 0
-        self.prot_max_auth_misconfigs = 0
-        self.serv_max_misconfigs = 0
-        self.serv_max_auth_misconfigs = 0
-        self.vuln_misconfigs = []
-        self.vuln_auth_misconfigs = []
+        self.prot_max_vulns = 0
+        self.prot_max_auth_vulns = 0
+        self.serv_max_vulns = 0
+        self.serv_max_auth_vulns = 0
+        self.found_vulns = []
+        self.found_auth_vulns = []
         self.unsafe_ver = False
         self.unsafe_ver_cve = []
         self.unsafe_tls = False
@@ -42,28 +42,28 @@ class Results:
                 string += "|\\___ The service uses the currently supported SSL/TLS protocol  \n|\n"
 
         # Print all the information about the tests
-        string += "| --------------- MISCONFIGURATIONS ---------------\n"
-        if (self.prot_max_misconfigs + self.serv_max_misconfigs) == 0:
+        string += "| --------------- VULNERABILITIES ---------------\n"
+        if (self.prot_max_vulns + self.serv_max_vulns) == 0:
             string += "|\\___ No tests found for this protocol\n"
-        elif len(self.vuln_misconfigs) == 0:
+        elif len(self.found_vulns) == 0:
             string += "|\\___ The protocol has been tested and no misconfigurations have been found\n"
         else:
-            for vuln in self.vuln_misconfigs:
+            for vuln in self.found_vulns:
                 string += f"|\\___ {vuln['name']}\n"
                 string += f"|     description: {vuln['description']}\n"
                 string += f"|     severity: {vuln['severity']}\n"
 
         string += (
-            "|\n| --------------- AUTHENTICATED MISCONFIGURATIONS ---------------\n"
+            "|\n| --------------- AUTHENTICATED VULNERABILITIES ---------------\n"
         )
-        if (self.prot_max_auth_misconfigs + self.serv_max_auth_misconfigs) == 0:
+        if (self.prot_max_auth_vulns + self.serv_max_auth_vulns) == 0:
             string += "|\\___ No tests found for this protocol\n"
         elif not self.prot_auth and not self.serv_auth:
             string += "|\\___ No credentials were given\n"
-        elif len(self.vuln_auth_misconfigs) == 0:
+        elif len(self.found_auth_vulns) == 0:
             string += "|\\___ The protocol has been tested and no misconfigurations have been found\n"
         else:
-            for vuln in self.vuln_auth_misconfigs:
+            for vuln in self.found_auth_vulns:
                 string += f"|\\___ {vuln['name']}\n"
                 string += f"|     description: {vuln['description']}\n"
                 string += f"|     severity: {vuln['severity']}\n"
@@ -79,8 +79,8 @@ class Results:
             "service": self.service,
             "unsafe_version": self.unsafe_ver,
             "unsafe_version_cve": self.unsafe_ver_cve,
-            "misconfigurations": self.vuln_misconfigs,
-            "auth_misconfigurations": self.vuln_auth_misconfigs,
+            "misconfigurations": self.found_vulns,
+            "auth_misconfigurations": self.found_auth_vulns,
         }
 
         if "SSL" in self.service or "TLS" in self.service:
@@ -91,16 +91,16 @@ class Results:
 
         return repr
 
-    def add_prot_max(self, prot_max_misconfigs: int, prot_max_auth_misconfigs: int):
-        self.prot_max_misconfigs = prot_max_misconfigs
-        self.prot_max_auth_misconfigs = prot_max_auth_misconfigs
+    def add_prot_max(self, prot_max_vulns: int, prot_max_auth_vulns: int):
+        self.prot_max_vulns = prot_max_vulns
+        self.prot_max_auth_vulns = prot_max_auth_vulns
 
-    def add_serv_max(self, serv_max_misconfigs: int, serv_max_auth_misconfigs: int):
-        self.serv_max_misconfigs = serv_max_misconfigs
-        self.serv_max_auth_misconfigs = serv_max_auth_misconfigs
+    def add_serv_max(self, serv_max_vulns: int, serv_max_auth_vulns: int):
+        self.serv_max_vulns = serv_max_vulns
+        self.serv_max_auth_vulns = serv_max_auth_vulns
 
-    def set_misconfigs(self, vulns: dict):
-        self.vuln_misconfigs.append(vulns)
+    def set_vulns(self, vulns: dict):
+        self.found_vulns.append(vulns)
 
-    def set_auth_misconfigs(self, vulns: dict):
-        self.vuln_auth_misconfigs.append(vulns)
+    def set_auth_vulns(self, vulns: dict):
+        self.found_auth_vulns.append(vulns)
