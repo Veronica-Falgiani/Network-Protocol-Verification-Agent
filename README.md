@@ -76,9 +76,9 @@ Tests are written in __json__ and there are two types: one for the protocols (in
 The base template for the json must have these items in order to work:
 ```
 {
-  "misconfigs": {},
+  "vulns": {},
   "login": "",
-  "auth_misconfigs": {},
+  "auth_vulns": {},
   "serv_names": []
 }
 ```
@@ -88,9 +88,9 @@ The base template for the json must have these items in order to work:
 The base template for the json must have these items in order to work:
 ```
 {
-  "misconfigs": {},
+  "vulns": {},
   "login": {},
-  "auth_misconfigs": {},
+  "auth_vulns": {},
   "vuln_serv_version": {}
 }
 ```
