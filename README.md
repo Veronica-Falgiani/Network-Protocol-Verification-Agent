@@ -2,7 +2,7 @@
 
 > Project for my thesis: "Design and Development of an Agent for Advanced Network Protocol Verification"
 
-This project tests for vulnerabilities inside protocols used by a specific host. The provided tests can be expanded and tests for new protocols can be created from scratch.
+A modular vulnerability scanner written in python. Tests for protocols and services are written in Json files.
 
 Currently supported protocols: 
 - ftp (ftps)
@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 ### Command line
 
-The program needs **sudo** privileges to scan and execute the test
+The program needs **sudo** privileges to scan and execute scans and tests
 
 ```
 usage: main.py [-h] [-v] [-nt] [-hs HOST_SCAN] [-ps PORT_SCAN] ports host
@@ -131,7 +131,7 @@ You can concatenate one or more tests inside misconfigs and auth_misconfigs.
 
 #### login
 
-The strings used to login into the service.
+The commands used to login into the service.
 
 ```
 "login": {
@@ -140,7 +140,7 @@ The strings used to login into the service.
 },
 ```
 
-- send_str: the string that needs to be sent for login. Separate more than one command with the `~~` characters and use `_username_` and `_password_` as placeholders for credentials
+- send_str: the commands that need to be sent for login. Separate more than one command with the `~~` characters and use `_username_` and `_password_` as placeholders for credentials
 - recv_str: the string we recieve when the login is correct
 
 ---
