@@ -1,6 +1,6 @@
-# Network-Protocol-Verification-Agent
+# Vulnerability Assessment Tool for Advanced Network Protocols
 
-> Project for my thesis: "Design and Development of an Agent for Advanced Network Protocol Verification"
+> Project for my thesis: "Design and Development of a Vulnerability Assessment Tool for Advanced Network Protocol Verification"
 
 A modular vulnerability scanner written in python. Tests for protocols and services are written in Json files.
 
